@@ -1,111 +1,134 @@
-# Eduka-Icons 0.3.0
+# Eduka-Icons
 
-Source mandiri untuk **Eduka-Icons-Light** dan **Eduka-Icons-Dark**, dibuat untuk
-Edukasaun OS. Pengelola: Hugo Moniz do Rego / proyek Edukasaun OS.
+Official icon themes of **Edukasaun OS**: soft, matte, hand-sculpted clay
+artwork in cream, burnt orange, golden yellow, olive and dusty aqua. Built for
+[Eduka-Desktop](https://github.com/hugomonizdorego/Eduka-Desktop) and usable
+on every Linux desktop environment and window manager.
 
-Desain memakai clay 3D matte, bentuk membulat, krem, oranye, kuning, olive, dan
-aqua. Folder tetap aqua dan Home tetap berupa rumah krem. Versi artwork tetap
-0.3.0. Semua 17 master utama disimpan sebagai WebP lossless dengan piksel RGBA
-yang identik terhadap master PNG 0.3.0.
+![Eduka-Icons on Eduka-Desktop](docs/screenshots/desktop-light.png)
 
-## Isi source
+| Theme | Use it with |
+| --- | --- |
+| **Eduka-Icons-Light** (default) | Eduka-Default-Theme, Liquid Glass, Eduka-Low-Theme, any light theme |
+| **Eduka-Icons-Dark** | Edukasaun-Dark, Eduka-Transparan, any dark theme |
+| **Eduka-Icons-Bright** | Eduka-MultiColor, colourful or very bright themes, school labs, children |
+| **Eduka-Icons-Comfort** | eye comfort and low vision: dark contours, warm low-blue colours, high contrast |
 
-- 79 ikon inti Eduka, alias aplikasi dan mimetype, serta 45 glyph panel/action
-  yang digambar dengan kode SVG sendiri.
-- 17 master artwork utama, kode untuk membangun komposisi lainnya, dan varian
-  folder dengan emblem.
-- Builder tema, installer, validator, generator preview, pembuat DEB, dan
-  pembungkus source.
-- Metadata HiDPI `Scale=2`, ukuran fisik 16–1024 px, dan fallback `hicolor`.
+![Light, Dark, Bright and Comfort](docs/screenshots/variants.png)
 
-Tidak ada katalog, folder, SVG, generator, tautan, atau dependensi Papirus.
-Katalog puluhan ribu logo aplikasi dari rilis gabungan sebelumnya sudah
-dikeluarkan. Nama alias aplikasi memakai artwork fungsi Eduka; logo aplikasi
-lain mengikuti ikon yang dipasang aplikasi tersebut melalui tema `hicolor`.
+## Every application has its own icon
 
-Artwork berwarna diekspor sebagai PNG transparan agar Qt dan GTK menggunakan
-berkas yang sama. Panel/action memakai SVG sendiri. Raster clay memiliki
-batas detail master 1024 px.
+![Application icons](docs/screenshots/apps-light.png)
 
-## Build offline pada Debian / Edukasaun OS
+- **Eduka hero artwork** for the desktop itself: Eduka applications, folders,
+  places, devices, file types, settings and categories.
+- **3,700+ application artworks / 8,300+ application names** in clay: GIMP,
+  Inkscape, Krita, Chrome, Brave, Firefox, Google Earth, WhatsApp, Telegram,
+  Discord, VLC, Steam, LibreOffice, the KDE (apps.kde.org), GNOME
+  (apps.gnome.org) and LXQt applications, education, games, office, audio and
+  video. They come from the Papirus catalog (GPL-3.0), sculpted into clay at
+  build time, so each app keeps a recognisable logo.
+- **Monogram chips** keep apps apart that would otherwise share one picture
+  (e.g. several programs whose upstream icon is the generic terminal).
+- **Applications installed later** get a clay icon automatically:
+  `eduka-icons-clayify` converts their own icon after every apt/dpkg run and
+  when Flatpak or Snap applications change.
 
-Pasang dependensi build:
+## Colourful clay panel icons
 
-```sh
-sudo apt install python3 python3-pil librsvg2-2 libcairo2 make gtk-update-icon-cache dpkg
-```
+![Panel and symbolic icons](docs/screenshots/panel.png)
 
-Di dalam folder source:
+Wi-Fi, Bluetooth, volume, battery, brightness, notifications, power and
+toolbar actions are colourful 3D clay. The `-symbolic` icons are two-tone
+colour filled outlines, so GTK 3/4 and KDE can still recolour them for their
+headerbars, and Qt panels such as Eduka-Panel show the colours.
 
-```sh
-make build
-make test
-make preview
-```
+## Install (.deb)
 
-Hasil tema tersedia di `build/themes/Eduka-Icons-Light/` dan
-`build/themes/Eduka-Icons-Dark/`. Preview dan laporan validasi ada di `build/`.
-Build tidak mengunduh artwork dan tidak memanggil layanan generatif.
+Packages are in [`release/`](release/) (also built by GitHub Actions on every
+push and attached to `v*` releases):
 
-## Pasang tema
-
-Sebagai pengguna desktop:
-
-```sh
-python3 tools/install.py --apply Light
-# atau: python3 tools/install.py --apply Dark
-```
-
-Installer mencadangkan instalasi Eduka sebelumnya, memasang kedua tema ke
-direktori ikon pengguna, memperbarui cache jika tersedia, dan mencadangkan
-konfigurasi LXQt/GTK sebelum memilih tema. Keluar dan masuk sesi kembali.
-
-Untuk paket sistem:
+| Package | Content |
+| --- | --- |
+| `eduka-icons_0.5.0_all.deb` | the four themes and the tools |
+| `eduka-icons-apps_0.5.0_all.deb` | application icons (required) |
+| `eduka-icons-apps-comfort_0.5.0_all.deb` | application icons, Comfort edition (recommended) |
 
 ```sh
-make deb
-sudo apt install ./dist/eduka-icons_0.3.0_all.deb
-eduka-icons-select --use-system-theme --apply Light
+sudo apt install ./eduka-icons_0.5.0_all.deb ./eduka-icons-apps_0.5.0_all.deb \
+                 ./eduka-icons-apps-comfort_0.5.0_all.deb
 ```
 
-Untuk Cubic, jalankan selector dengan `--apply Light --system-defaults` sebagai
-root setelah paket terpasang. Panduan rinci: [docs/INSTALL-ID.md](docs/INSTALL-ID.md).
-
-## Unggah source ke GitHub
-
-Ekstrak ZIP atau tar.gz, lalu unggah isi folder **Eduka-Icons** ke repository
-baru bernama **Eduka-Icons**. Simpan file source sebagai file biasa agar kode
-bisa dibaca dan workflow bisa berjalan. Daftar berkas source kurang dari 100
-file dan setiap file berada di bawah batas 25 MiB untuk unggahan browser.
-Aturan ukuran: https://docs.github.com/en/repositories/working-with-files/managing-files/adding-a-file-to-a-repository
-
-Folder `build/`, `dist/`, paket DEB, cache, dan arsip tidak ikut commit karena
-diabaikan oleh `.gitignore`. Jangan menyalin riwayat repository lama yang
-memuat berkas besar ke repository baru ini.
-
-Contoh terminal; ganti `USERNAME` dengan akun GitHub Anda dan buat repository
-kosong terlebih dahulu:
+On first installation Eduka-Icons-Light becomes the default icon theme for new
+accounts and the live session. Pick another variant at any time:
 
 ```sh
-git init -b main
-git add .
-git commit -m "Eduka-Icons 0.3.0 standalone source"
-git remote add origin https://github.com/USERNAME/Eduka-Icons.git
-git push -u origin main
+eduka-icons-select --apply Comfort       # this account, every desktop
+eduka-icons-select --follow-desktop      # follow the Eduka-Desktop theme again
+eduka-icons-select --status
 ```
 
-`make source` membuat ZIP dan tar.gz kecil di `dist/` hanya dari source yang
-diizinkan. GitHub Actions menjalankan build, validasi, preview dan pembuatan
-DEB; hasilnya disediakan sebagai workflow artifacts. Gunakan GitHub Releases
-untuk mendistribusikan paket biner.
+### Cubic (Edukasaun OS ISO)
 
-## Lisensi dan artwork
+Copy the three `.deb` files into the Cubic terminal (drag and drop), then:
 
-GPL-3.0; lihat `LICENSE`. Bentuk vektor dan glyph panel berasal dari kode
-Eduka. Master utama dibuat dengan bantuan generasi gambar dari arahan desain
-pengguna; provenance dan checksum ada di `assets/generated.json` serta
-`assets/PROMPTS.md`. Gambar referensi pengguna tidak didistribusikan di source.
+```sh
+apt update
+apt install -y ./eduka-icons_0.5.0_all.deb ./eduka-icons-apps_0.5.0_all.deb \
+               ./eduka-icons-apps-comfort_0.5.0_all.deb
+# another ISO default: EDUKA_ICONS_DEFAULT=Bright apt install -y ./eduka-icons*_0.5.0_all.deb
+rm ./eduka-icons*_0.5.0_all.deb
+```
 
-Source telah disiapkan untuk GitHub; repository jarak jauh belum dibuat dari
-lingkungan ini. Pengujian sesi LXQt nyata dan ISO lengkap tetap perlu dilakukan
-di perangkat Edukasaun OS.
+Full guide, per-desktop details and troubleshooting: [docs/INSTALL.md](docs/INSTALL.md).
+
+## Build from source
+
+Debian 13 / Edukasaun OS:
+
+```sh
+sudo apt install python3 python3-pil librsvg2-2 librsvg2-common libcairo2 libgtk-3-0 \
+     gtk-update-icon-cache dpkg make fonts-dejavu-core
+make build          # build/themes/Eduka-Icons-{Light,Dark,Bright,Comfort,Apps,Apps-Comfort}
+make test           # source check, validation, GTK lookups, coverage report
+make screenshots    # docs/screenshots/*.png
+make deb            # dist/*.deb
+make install        # copy to ~/.local/share/icons and select Light (no sudo)
+```
+
+The build is offline and reproducible from the files in this repository
+(about 15 minutes on 4 cores; app masters are cached in `build/app-masters`).
+
+| Path | Purpose |
+| --- | --- |
+| `assets/masters/` | 17 hero clay masters (lossless WebP, checksummed) |
+| `assets/upstream/` | pinned Papirus application SVGs and their licence |
+| `tools/artwork.py`, `tools/clay.py` | Eduka clay compositions and the icon-name catalog |
+| `tools/catalog.py` | decides Eduka art, clay app art or a monogram copy for every name |
+| `tools/clayify.py` | clay conversion, Comfort edition, monogram chips |
+| `tools/symbolic.py`, `tools/outline.py` | symbolic glyphs and stroke-to-fill conversion |
+| `tools/build_theme.py`, `tools/build_apps.py` | build the themes |
+| `tools/select_theme.py` | `eduka-icons-select` (user, system, follow mode) |
+| `tools/clayify_installed.py` | `eduka-icons-clayify` (applications installed later) |
+| `tools/build_deb.py` | Debian packages |
+| `tools/validate.py`, `tools/check_lookup.py`, `tools/coverage.py` | tests |
+| `tools/preview.py` | screenshots |
+
+## Screenshots
+
+| Light | Dark |
+| --- | --- |
+| ![](docs/screenshots/desktop-light.png) | ![](docs/screenshots/desktop-dark.png) |
+| **Bright** | **Comfort** |
+| ![](docs/screenshots/desktop-bright.png) | ![](docs/screenshots/desktop-comfort.png) |
+
+![Applications, Comfort](docs/screenshots/apps-comfort.png)
+![Symbolic icons](docs/screenshots/symbolic.png)
+
+## Credits and licence
+
+Artwork and code: Hugo Moniz do Rego and the Edukasaun OS project, GPL-3.0
+(see `LICENSE`). Eduka-Icons is a fork of the
+[Papirus icon theme](https://github.com/PapirusDevelopmentTeam/papirus-icon-theme)
+(GPL-3.0, Papirus Development Team): its application artwork is the source of
+the clay application icons (`assets/upstream/PAPIRUS-LICENSE`).

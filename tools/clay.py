@@ -1,4 +1,4 @@
-"""Eduka 0.3.0 clay assets. Embedded bitmaps keep Qt and GTK rendering equal."""
+"""Eduka clay assets (17 hero masters from 0.3.0 plus generated compositions)."""
 import base64
 import functools
 from pathlib import Path

@@ -40,6 +40,7 @@ def badge(kind):
     if kind=='templates':return rect(52,70,24,24,3,'paper')+line('M58 76H70M58 82H70M58 88H66','#6489c0',2)
     if kind=='git':return line('M57 70V91M57 82Q73 82 73 72','#fff2da',3)+circle(57,71,4,'paper')+circle(57,91,4,'paper')+circle(73,72,4,'honey')
     if kind=='cloud':return path('M54 93C41 93 42 79 53 79C54 67 70 65 75 79C87 77 88 93 77 93Z','paper')
+    if kind=='desktop':return rect(49,69,30,21,3,'paper')+rect(53,73,22,13,2,'sky')+rect(60,90,8,4,1,'paper')
     if kind=='text':return rect(53,67,24,29,3,'paper')+line('M58 76H72M58 82H72M58 88H69','#7296c4',2.2)
     return ''
 
@@ -88,8 +89,8 @@ def glyph(kind,small=False):
     if kind.startswith('doc-'):return doc(kind[4:])
     if kind=='gear':return gear()
     if kind=='flower':return flower()
-    if kind=='phone':return path('M31 26Q25 26 23 34Q20 59 44 83Q66 105 89 102Q95 101 99 94L102 84Q103 80 98 77L83 69Q78 67 75 72L69 80Q54 77 46 64Q40 56 40 51L48 46Q52 43 49 38L41 27Q38 24 31 26Z','ivory')+line('M30 31Q26 38 29 46','#fff9e9',2)
-    if kind=='message':return path('M34 29H91Q103 29 103 42V77Q103 89 91 89H59L38 103L40 89H34Q23 89 23 77V42Q23 29 34 29Z','ivory')+line('M37 45H89M37 58H78M37 71H66','#52a4c2',5)
+    if kind=='phone':return circle(64,64,40,'mint')+'<g transform="translate(19 19) scale(.7)">'+path('M31 26Q25 26 23 34Q20 59 44 83Q66 105 89 102Q95 101 99 94L102 84Q103 80 98 77L83 69Q78 67 75 72L69 80Q54 77 46 64Q40 56 40 51L48 46Q52 43 49 38L41 27Q38 24 31 26Z','ivory')+'</g>'
+    if kind=='message':return path('M34 29H91Q103 29 103 42V77Q103 89 91 89H59L38 103L40 89H34Q23 89 23 77V42Q23 29 34 29Z','sky')+line('M37 45H89M37 58H78M37 71H66','#fff3dd',5)
     if kind=='chat':return path('M30 40H76Q88 40 88 51V77Q88 88 76 88H53L35 101V88H30Q21 88 21 77V51Q21 40 30 40Z','ivory')+path('M52 25H96Q106 25 106 36V63Q106 74 96 74H87V85L73 74H52Q42 74 42 63V36Q42 25 52 25Z','coral')+line('M54 40H93M54 50H84M54 60H73','#fff0d9',4)+circle(30,94,9,'honey')+line('M26 94H34M30 90V98','#fff8e7',2)
     if kind=='camera':return rect(24,35,80,62,14,'ivory')+rect(40,28,25,13,5,'ivory')+rect(86,42,10,5,2,'ink')+circle(64,66,25,'metal')+circle(64,66,22,'lens')+circle(64,66,17,'glass')+circle(64,66,12,'glass',stroke='#426378',stroke_width='1.2')+circle(58,59,5,'#c8e6ef',opacity='.65')+circle(69,72,3,'sky',opacity='.5')+line('M31 40H42','#fffdf1',1.5)
     if kind=='weather':return circle(84,44,20,'honey')+''.join(line(f'M{84+math.cos(a)*25:.1f} {44+math.sin(a)*25:.1f}L{84+math.cos(a)*31:.1f} {44+math.sin(a)*31:.1f}','#ffc856',3) for a in [i*math.pi/4 for i in range(8)])+path('M34 91C14 91 16 66 35 65C35 39 69 34 79 59C105 55 113 91 89 91Z','paper')+line('M43 97L39 106M63 97L59 106M83 97L79 106','#62ddfa',4)
@@ -103,7 +104,7 @@ def glyph(kind,small=False):
     if kind=='store':return path('M31 43H97L103 98Q104 104 97 104H31Q24 104 25 98Z','ivory')+path('M45 50V36C45 16 83 16 83 36V50','none',stroke='#ffd05f',stroke_width=7)+circle(45,50,3,'gold')+circle(83,50,3,'gold')+rect(47,66,34,23,5,'coral')+line('M64 70V84M57 77H71','#fff0df',4)
     if kind=='update':return circle(64,65,35,'ivory')+path('M40 50C50 30 83 29 94 49L103 41V66H78L86 57C78 42 58 42 49 56Z','sky')+path('M91 82C78 104 48 100 35 81L25 90V65H50L43 73C53 89 73 91 82 76Z','coral')+circle(64,66,7,'honey')
     if kind=='shield':return path('M64 24L99 35V65Q97 90 64 105Q31 90 29 65V35Z','ivory')+path('M64 31L92 41V64Q90 84 64 98Q39 84 36 64V41Z','sky')+line('M48 63L60 75L82 49','#fff8e5',7)+line('M39 43L62 34','#b9efff',1.7)
-    if kind=='person':return circle(64,39,13,'ivory')+path('M37 103V85Q37 62 64 62Q91 62 91 85V103Z','sky')+path('M51 64L64 80L77 64','ivory')+path('M64 81L59 100H69Z','coral')+path('M44 88Q44 70 55 68','none',stroke='#aeeeff',stroke_width=2)
+    if kind=='person':return circle(64,40,15,'peach')+path('M34 103V86Q34 62 64 62Q94 62 94 86V103Z','teal')+path('M51 64L64 80L77 64','ivory')+path('M64 81L59 100H69Z','coral')
     if kind=='rocket':return path('M48 76L27 86L32 62L49 54Z','coral')+path('M65 84L64 105L86 89L82 72Z','coral')+path('M46 80L30 103L52 94Z','honey')+path('M46 74C49 45 73 22 99 25C101 53 84 76 63 87Z','ivory')+circle(77,47,12,'metal')+circle(77,47,8,'sky')+circle(74,44,3,'paper')+path('M44 78L62 92L56 98L39 84Z','gold')
     if kind=='video':return rect(25,35,79,61,14,'ivory')+rect(31,41,67,49,11,'coral')+path('M55 51L80 65L55 80Z','paper')+line('M39 45H85','#ffb1a1',1.4)
     if kind=='headphones':return path('M31 66V56C31 12 97 12 97 56V66','none',stroke='#e5dbca',stroke_width=11)+path('M36 58V54C36 18 92 18 92 54V58','none',stroke='#fff8e7',stroke_width=3)+rect(24,61,22,37,10,'ivory')+rect(83,61,22,37,10,'ivory')+rect(39,67,8,26,4,'coral')+rect(81,67,8,26,4,'coral')
@@ -116,8 +117,8 @@ def glyph(kind,small=False):
     if kind=='usb':return rect(46,23,36,30,4,'metal')+rect(52,28,7,12,1,'ink')+rect(69,28,7,12,1,'ink')+rect(40,48,48,57,14,'sky')+line('M64 85V64M64 73L54 66M64 77L76 69','#eaf8ff',3)+circle(64,88,4,'ivory')+path('M61 64L64 59L67 64Z','ivory')+rect(74,64,5,5,1,'ivory')
     if kind=='printer':return rect(39,24,50,28,4,'paper')+rect(22,45,84,41,12,'metal')+rect(37,69,54,36,5,'paper')+rect(28,62,72,11,4,'ink')+rect(39,70,50,33,4,'paper')+line('M47 81H82M47 90H76','#8197ae',3)+circle(95,55,3,'sky')
     if kind=='battery':return rect(49,23,30,11,3,'metal')+rect(39,31,50,73,11,'ivory')+rect(46,51,36,45,5,'teal')+path('M67 43L54 68H64L61 86L77 61H68Z','honey')+line('M43 36V87','#fffdf3',2)
-    if kind=='wifi':return line('M25 45Q64 13 103 45M37 61Q64 37 91 61M49 77Q64 63 79 77','#f6f6e9',9)+circle(64,94,6,'honey')
-    if kind=='bluetooth':return line('M46 39L83 82L64 100V25L83 46L46 87','#f4f5ef',7)+circle(96,95,5,'teal')
+    if kind=='wifi':return rect(20,22,88,84,26,'sky')+line('M35 56Q64 31 93 56M45 69Q64 53 83 69M55 81Q64 74 73 81','#fff3dd',8)+circle(64,91,6,'honey')
+    if kind=='bluetooth':return rect(34,18,60,92,30,'cobalt')+line('M50 48L78 76L64 90V38L78 52L50 80','#fff3dd',7)
     if kind=='home':return path('M33 53L66 27L99 54V97Q99 103 92 103H38Q32 103 32 97Z','gold')+path('M25 57L64 24L105 57L99 64L64 35L31 64Z','honey')+rect(84,29,11,21,2,'gold')+path('M43 63L64 46L86 63V95H43Z','honey')+rect(55,69,19,31,3,'ivory')+rect(59,73,11,24,2,'gold')+circle(69,86,1.5,'paper')+line('M35 63V95H47','#ffd678',2)+line('M38 56L64 34','#ffe3a5',1.6)
     if kind=='trash':return path('M36 46H92L87 96Q86 104 78 104H50Q42 104 41 96Z','metal')+path('M42 48H86L81 98H48Z','ivory')+rect(31,36,66,10,5,'ivory')+rect(50,26,28,11,4,'metal')+line('M53 57L56 88M75 57L72 88','#99aaba',3)
     if kind=='lock':return path('M42 56V42C42 16 86 16 86 42V56','none',stroke='#d1dae0',stroke_width=10)+path('M45 54V42C45 20 83 20 83 42V54','none',stroke='#fff5df',stroke_width=2)+rect(30,52,68,51,12,'honey')+circle(64,72,7,'ink')+rect(61,74,6,14,3,'ink')+line('M37 58H84','#ffe5aa',1.8)
@@ -126,25 +127,50 @@ def glyph(kind,small=False):
     if kind=='calendar':return rect(27,30,74,75,13,'ivory')+path('M27 44Q27 30 40 30H88Q101 30 101 44V52H27Z','coral')+line('M44 25V39M84 25V39','#fff3dc',6)+''.join(rect(x,y,8,7,2,'coral' if (x,y)==(62,76) else 'metal') for x in (36,49,62,75,88) for y in (61,76,91))
     if kind=='search':return circle(56,54,26,'metal')+circle(56,54,20,'glass')+circle(50,47,7,'sky',opacity='.35')+line('M74 74L99 100','#edbc65',13)+line('M80 82L96 98','#ffe2a8',2)+circle(56,54,17,'none',stroke='#acecff',stroke_width='1.5')
     if kind=='warning':return path('M58 29Q64 19 70 29L105 90Q112 103 99 103H29Q16 103 23 90Z','honey')+rect(60,46,8,31,4,'ink')+circle(64,89,4,'ink')+line('M30 88L57 39','#ffe69f',2)
-    if kind=='info':return circle(64,64,39,'ivory')+circle(64,44,5,'sky')+rect(60,57,8,31,4,'sky')+line('M60 87H70','#3590e3',4)
-    if kind=='power':return line('M64 24V60','#fff3e3',9)+path('M42 36A35 35 0 1 0 86 36','none',stroke='#fff3e3',stroke_width=9,stroke_linecap='round')
-    if kind=='volume':return path('M25 52H42L63 34V94L42 76H25Z','ivory')+path('M75 46Q96 64 75 82M88 34Q118 64 88 94','none',stroke='#eaf6fa',stroke_width=6,stroke_linecap='round')
+    if kind=='info':return circle(64,64,40,'sky')+circle(64,42,6,'paper')+rect(59,56,10,34,5,'paper')
+    if kind=='power':return circle(64,64,40,'coral')+line('M64 38V62','#fff3e3',9)+path('M50 46A24 24 0 1 0 78 46','none',stroke='#fff3e3',stroke_width=9,stroke_linecap='round')
+    if kind=='volume':return rect(22,22,84,84,24,'teal')+path('M36 54H48L64 40V88L48 74H36Z','ivory')+path('M74 52Q84 64 74 76M82 42Q100 64 82 86','none',stroke='#fff3dd',stroke_width=6,stroke_linecap='round')
     if kind=='wand':return line('M34 99L86 47','#f5ebd8',12)+line('M34 99L62 71','#689ce4',11)+path('M86 23L91 36L104 41L91 46L86 59L81 46L68 41L81 36Z','honey')+path('M35 28L39 37L48 41L39 45L35 54L31 45L22 41L31 37Z','paper')
     if kind=='network':return rect(44,23,40,29,6,'metal')+rect(49,28,30,17,3,'sky')+line('M64 53V72M33 73H96M33 73V83M96 73V83','#f5f0df',6)+rect(20,82,27,23,5,'ivory')+rect(82,82,27,23,5,'ivory')+rect(24,86,19,12,2,'sky')+rect(86,86,19,12,2,'sky')
     if kind=='keyboard':return rect(18,40,92,54,11,'metal')+rect(22,43,84,47,8,'ivory')+''.join(rect(x,y,8,7,2,'ink') for y in (49,61) for x in (27,40,53,66,79,92))+rect(38,75,52,7,2,'ink')+line('M25 44H98','#fffdf0',1.4)
     if kind=='mouse':return rect(40,23,48,83,24,'ivory')+path('M64 25V60M43 60H85','none',stroke='#a6b4c6',stroke_width=2)+rect(60,33,8,17,4,'sky')+path('M47 45Q48 31 57 29','none',stroke='#fffdf0',stroke_width=2,stroke_linecap='round')
     if kind=='paint':return path('M49 73L89 26Q99 18 103 29L67 83Z','honey')+path('M49 72L68 84L59 97Q54 107 30 105Q45 99 37 92Z','coral')+line('M51 71L70 84','#d2d8da',6)+line('M57 65L93 28','#ffe6ac',2)
+    if kind=='bell':return path('M64 24Q87 24 88 52V74L99 89H29L40 74V52Q41 24 64 24Z','honey')+circle(64,22,6,'gold')+circle(64,95,9,'coral')+line('M47 50Q48 36 58 33','#ffeab5',3)
+    if kind=='smile':return circle(64,64,40,'honey')+circle(50,56,5,'ink')+circle(78,56,5,'ink')+path('M46 74Q64 92 82 74','none',stroke='#49453e',stroke_width=6,stroke_linecap='round')+circle(42,72,6,'coral',opacity='.55')+circle(86,72,6,'coral',opacity='.55')
+    if kind=='help':return circle(64,64,40,'teal')+path('M50 53Q50 37 64 37Q78 37 78 51Q78 60 64 66V73','none',stroke='#fff3dd',stroke_width=9,stroke_linecap='round',stroke_linejoin='round')+circle(64,89,6,'paper')
+    if kind=='error':return circle(64,64,40,'coral')+line('M49 49L79 79M79 49L49 79','#fff3dd',9)
+    if kind=='check':return circle(64,64,40,'mint')+line('M46 65L59 78L83 51','#fff3dd',9)
+    if kind=='key':return circle(44,64,22,'honey')+circle(44,64,8,'ivory')+rect(60,57,48,14,5,'honey')+rect(86,68,8,16,3,'gold')+rect(98,68,8,22,3,'gold')
+    if kind=='star':return path('M64 18L77 47L108 50L85 71L92 102L64 86L36 102L43 71L20 50L51 47Z','honey')+line('M57 32L50 48','#ffeab5',3)
+    if kind=='globe':return circle(64,64,40,'sky')+path('M40 38L55 30L63 38L58 50L68 54L66 67L77 73L73 91L60 99L52 83L42 77L44 66L34 62Z','mint')+path('M80 35L93 47L97 61L88 65L77 54L79 44Z','honey')+path('M64 24Q82 44 82 64Q82 84 64 104M64 24Q46 44 46 64Q46 84 64 104M25 64H103','none',stroke='#fff3dd',stroke_width=2,opacity='.7')
+    if kind=='package':return path('M24 46L64 62V106L24 90Z','gold')+path('M64 62L104 46V90L64 106Z','honey')+path('M24 46L64 30L104 46L64 62Z','ivory')+path('M42 38L82 54V68L90 65V51L50 35Z','coral')
+    if kind=='chart':return rect(22,24,84,78,14,'ivory')+rect(36,64,13,26,4,'teal')+rect(57,50,13,40,4,'honey')+rect(78,36,13,54,4,'coral')+line('M33 94H95','#cdbf9f',3)
+    if kind=='mic':return rect(47,18,34,56,17,'metal')+line('M54 32H74M54 42H74M54 52H74','#8c8f7c',2.5)+path('M37 58Q37 88 64 88Q91 88 91 58','none',stroke='#e8dcc4',stroke_width=7,stroke_linecap='round')+rect(60,88,8,12,2,'ivory')+rect(44,98,40,9,4,'coral')
+    if kind=='font':return rect(22,22,84,84,22,'ivory')+line('M36 90L54 38L72 90M42 74H66','#df7541',9)+circle(86,80,9,'none',stroke='#91b6ae',stroke_width=6)+line('M95 70V90','#91b6ae',6)
+    if kind=='cloud':return path('M38 94C16 94 16 62 40 62C42 36 78 32 86 56C108 52 114 94 90 94Z','sky')+line('M34 70Q36 60 46 60','#e6f2ef',3)
+    if kind=='download':return rect(24,82,80,22,9,'ivory')+path('M53 22H75V55H90L64 84L38 55H53Z','coral')+circle(88,93,3.5,'mint')
+    if kind=='users':return circle(84,40,12,'honey')+path('M64 98V82Q64 60 84 60Q104 60 104 82V98Z','coral')+circle(52,46,15,'peach')+path('M22 106V88Q22 66 52 66Q82 66 82 88V106Z','teal')
+    if kind=='puzzle':return path('M28 44H50Q46 24 64 24Q82 24 78 44H100V66Q118 62 118 80Q118 98 100 94V104H28V82Q44 86 44 72Q44 58 28 62Z','mint')+line('M34 50H46','#e5ecd2',2)
+    if kind=='disc':return circle(64,64,40,'metal')+circle(64,64,35,'glass')+path('M64 29A35 35 0 0 1 99 64H84A20 20 0 0 0 64 44Z','paper',opacity='.45')+circle(64,64,12,'ivory')+circle(64,64,5,'ink')
+    if kind=='image':return rect(22,28,84,72,12,'ivory')+rect(30,36,68,56,7,'sky')+path('M30 84L52 60L68 76L78 68L98 86V92H30Z','mint')+circle(82,52,7,'honey')
+    if kind=='moon':return path('M76 24A40 40 0 1 0 104 76A32 32 0 0 1 76 24Z','honey')+path('M92 30L95 37L102 40L95 43L92 50L89 43L82 40L89 37Z','paper')
+    if kind=='notes':return rect(26,24,76,80,10,'honey')+rect(26,24,76,16,8,'coral')+line('M38 56H90M38 70H90M38 84H74','#fff6e2',4)
+    if kind=='smartphone':return rect(38,16,52,96,14,'ink')+rect(43,24,42,74,8,'sky')+circle(64,104,3.5,'metal')+path('M48 90L60 72L68 82L74 76L80 90Z','mint')
+    if kind=='laptop-remote':return rect(28,27,72,56,8,'metal')+rect(33,32,62,45,4,'ink')+rect(37,36,54,37,3,'sky')+path('M28 82H100L112 99Q111 104 103 104H25Q17 104 16 99Z','ivory')+line('M52 55H76M68 47L76 55L68 63','#fff3dd',4)
+    if kind=='logout':return rect(30,22,44,84,8,'ivory')+rect(36,28,32,72,5,'honey')+circle(60,66,3.5,'gold')+path('M66 52H86V42L106 64L86 86V76H66Z','coral')
+    if kind=='hibernate':return circle(64,64,40,'sky')+path('M74 34A28 28 0 1 0 94 72A22 22 0 0 1 74 34Z','paper')+line('M40 40H50L40 50H50M30 58H37L30 65H37','#fff3dd',3)
+    if kind=='clock-settings':return glyph('clock')+'<g transform="translate(66 66) scale(.42)">'+gear()+'</g>'
     raise KeyError(kind)
 
 def folder_kind(name):
-    for token,kind in [('home','home'),('download','download'),('music','music'),('picture','pictures'),('photo','pictures'),('video','video'),('public','share'),('share','share'),('lock','lock'),('private','lock'),('template','templates'),('git','git'),('cloud','cloud'),('document','text'),('text','text')]:
+    for token,kind in [('desktop','desktop'),('remote','cloud'),('home','home'),('download','download'),('music','music'),('picture','pictures'),('photo','pictures'),('video','video'),('public','share'),('share','share'),('lock','lock'),('private','lock'),('template','templates'),('git','git'),('cloud','cloud'),('document','text'),('text','text')]:
         if token in name.lower():return kind
     return 'plain'
 
 CATALOG = {
  'edukasaun': ('book','mint','apps','edukasaun-os eduka-desktop Eduka-Desktop eduka-menu Eduka-Menu eduka-icons eduka-panel Eduka-Panel start-here distributor-logo-debian'),
- 'folder': ('folder','cream','places','folder-green inode-directory'),
- 'user-home': ('home','mint','places','folder-home user-home-symbolic'),
+ 'folder': ('folder','cream','places','folder-green inode-directory folder-open folder-drag-accept folder-visiting folder-new'),
+ 'user-home': ('home','mint','places','folder-home go-home'),
  'user-trash': ('trash','cream','places','user-trash-full trash-empty trash-full'),
  'folder-documents': ('doc-text','sky','places','folder-documents-green'),
  'folder-download': ('update','mint','places','folder-downloads folder-download-green'),
@@ -215,9 +241,10 @@ CATALOG = {
  'text-x-script': ('code','sky','mimetypes','text-x-python text-x-shellscript text-x-csrc'),
  'system-search': ('search','sky','apps','search org.gnome.SearchTool'),
  'system-lock-screen': ('lock','cream','apps','preferences-system-privacy'),
- 'system-shutdown': ('power','coral','apps','system-log-out'),
- 'dialog-warning': ('warning','cream','status','dialog-error'),
- 'dialog-information': ('info','sky','status','dialog-question'),
+ 'system-shutdown': ('power','coral','apps',''),
+ 'system-log-out': ('logout','coral','apps','lxqt-logout gnome-logout application-exit xfsm-logout'),
+ 'dialog-warning': ('warning','cream','status','dialog-important emblem-important'),
+ 'dialog-information': ('info','sky','status','help-about help-info eduka-about lxqt-about gtk-about'),
  'emblem-favorite': ('heart','cream','emblems','emblem-favorites'),
 }
 
@@ -236,7 +263,7 @@ for name,(kind,c,ctx,aliases) in list(CATALOG.items()):
     elif kind in ('monitor','drive','printer','mouse','keyboard'):c='cobalt'
     elif kind in ('update','store','battery'):c='sky'
     CATALOG[name]=(kind,c,ctx,aliases)
-CATALOG['call-start']=('phone','teal','apps','internet-telephony phone org.gnome.Calls')
+CATALOG['call-start']=('phone','teal','apps','internet-telephony org.gnome.Calls call-outgoing')
 CATALOG['mail-unread']=('message','teal','status','mail-message-new')
 
 # Application aliases use original functional artwork rather than brand logos.
@@ -244,3 +271,117 @@ k,c,context,names=CATALOG['internet-web-browser']
 CATALOG['internet-web-browser']=(k,c,context,names+' firefox firefox-esr org.mozilla.firefox chromium chromium-browser org.chromium.Chromium google-chrome com.google.Chrome brave-browser vivaldi opera')
 
 
+
+def _extend(name, extra):
+    kind, c, context, names = CATALOG[name]
+    CATALOG[name] = (kind, c, context, names + ' ' + extra)
+
+# Desktop environments, Eduka-Desktop and common Debian applications.
+EXTENSIONS = {
+ 'edukasaun': 'edukasaun-desktop edukasaun-desktop-menu-open eduka-menu-daemon eduka-desktop-session edukasaun-logo distributor-logo start-here-debian applications-boot',
+ 'internet-web-browser': 'microsoft-edge librewolf io.gitlab.librewolf-community waterfox falkon org.kde.falkon midori qutebrowser konqueror org.kde.konqueror palemoon torbrowser tor-browser seamonkey floorp zen-browser text-html application-xhtml+xml',
+ 'system-file-manager': 'org.xfce.thunar spacefm doublecmd krusader org.kde.krusader pcmanfm-qt-desktop file-manager',
+ 'utilities-terminal': 'alacritty Alacritty kitty foot tilix com.gexperts.Tilix terminator guake yakuake sakura urxvt rxvt-unicode uxterm cool-retro-term org.gnome.Console kgx lxqt-sudo root-terminal',
+ 'accessories-calculator': 'qalculate qalculate-gtk qalculate-qt speedcrunch org.kde.kcalc applications-mathematics tuxmath geogebra org.geogebra.GeoGebra kbruch org.kde.kbruch kig org.kde.kig kmplot org.kde.kmplot',
+ 'accessories-text-editor': 'gnome-text-editor org.kde.kate xed notepadqq juffed leafpad l3afpad text-editor',
+ 'preferences-system': 'lxqt-config-session lxqt-config-globalkeyshortcuts lxqt-config-file-associations dconf-editor ca.desrt.dconf-editor preferences-other preferences-desktop-default-applications xfce4-settings-manager org.xfce.settings.manager mate-control-center systemsettings5 kcmshell5 cinnamon-settings budgie-control-center applications-system-settings lxqt-panel',
+ 'eduka-update-system': 'software-update-available software-properties software-properties-gtk software-properties-qt mintupdate org.gnome.Software-update package-update-indicator system-upgrade',
+ 'eduka-konekta': 'internet-chat-app telegram telegram-desktop org.telegram.desktop signal-desktop org.signal.Signal whatsapp-linux-app whatsapp-desktop com.github.eneshecan.WhatsAppForLinux zapzap discord com.discordapp.Discord element-desktop im.riot.Riot pidgin hexchat io.github.Hexchat konversation org.kde.konversation polari org.gnome.Polari skype slack com.slack.Slack zoom us.zoom.Zoom teams-for-linux jitsi-meet applications-chat',
+ 'eduka-block': 'gufw firewall-config firewalld security-high eduka-parental malcontent-control org.freedesktop.MalcontentControl preferences-system-parental-controls clamtk',
+ 'system-software-install': 'muon packagekit gnome-packagekit pamac pamac-manager flatpak flathub mintinstall plasma-discover org.kde.discover.app lxqt-archiver-store snap-store io.snapcraft.Store',
+ 'libreoffice-writer': 'abiword org.gnome.AbiWord x-office-document application-msword application-vnd.openxmlformats-officedocument.wordprocessingml.document application-rtf text-richtext',
+ 'libreoffice-calc': 'gnumeric org.gnome.Gnumeric x-office-spreadsheet application-vnd.ms-excel application-vnd.openxmlformats-officedocument.spreadsheetml.sheet application-vnd.oasis.opendocument.spreadsheet text-csv',
+ 'libreoffice-impress': 'x-office-presentation application-vnd.ms-powerpoint application-vnd.openxmlformats-officedocument.presentationml.presentation application-vnd.oasis.opendocument.presentation',
+ 'libreoffice-draw': 'x-office-drawing application-vnd.oasis.opendocument.graphics image-x-xcf',
+ 'libreoffice-startcenter': 'onlyoffice-desktopeditors org.onlyoffice.desktopeditors wps-office wps-office2019-kprometheus calligra applications-office-suite',
+ 'multimedia-photo-manager': 'lximage-qt eog org.gnome.eog gpicview ristretto org.xfce.ristretto gwenview org.kde.gwenview nomacs org.nomacs.ImageLounge feh loupe org.gnome.Loupe image-viewer accessories-image-viewer applications-photography eom org.mate.eom xviewer',
+ 'multimedia-video-player': 'io.mpv.Mpv haruna org.kde.haruna dragonplayer org.kde.dragonplayer kaffeine xplayer smplayer-mpv gnome-mpv io.github.celluloid_player.Celluloid totem showtime org.gnome.Showtime kodi tv.kodi.Kodi applications-video',
+ 'multimedia-audio-player': 'strawberry org.strawberrymusicplayer.strawberry lollypop org.gnome.Lollypop spotify com.spotify.Client deadbeef qmmp amarok juk sayonara quodlibet io.github.quodlibet.QuodLibet cantata gnome-music org.gnome.Music shortwave de.haeckerfelix.Shortwave multimedia-player',
+ 'audio-headphones': 'audacity org.audacityteam.Audacity ardour lmms io.lmms.LMMS hydrogen musescore mscore soundconverter easytag kid3 multimedia-audio-editor applications-audio',
+ 'internet-mail': 'geary org.gnome.Geary kmail org.kde.kmail2 claws-mail sylpheed mailspring betterbird eu.betterbird.Betterbird mail-client',
+ 'accessories-character-map': 'org.gnome.Characters gnome-characters kcharselect org.kde.kcharselect',
+ 'x-office-calendar': 'office-calendar evolution-calendar orage appointment-soon appointment-new text-calendar text-x-vcalendar',
+ 'applications-education': 'gcompris gcompris-qt org.kde.gcompris scratch scratch-desktop edu.mit.Scratch blinken org.kde.blinken applications-school',
+ 'applications-science': 'kalzium org.kde.kalzium avogadro chemtool step org.kde.step gnuplot octave org.octave.Octave scilab rstudio jupyter jupyterlab spyder',
+ 'applications-games': 'gnome-mines org.gnome.Mines gnome-mahjongg aisleriot sol gnome-chess org.gnome.Chess kpat kmines ksudoku supertux supertuxkart 0ad minetest net.minetest.Minetest steam com.valvesoftware.Steam lutris retroarch input-gaming',
+ 'applications-development': 'geany org.geany.Geany vscode com.visualstudio.code code codium com.vscodium.codium sublime-text thonny org.thonny.Thonny bluefish idle idle3 qtcreator org.qt-project.qtcreator kdevelop org.kde.kdevelop codeblocks lazarus arduino arduino-ide cc.arduino.IDE2 eclipse netbeans pycharm-community android-studio gitg org.gnome.gitg git-cola meld org.gnome.Meld ghex org.gnome.GHex okteta applications-engineering',
+ 'computer': 'hardinfo hardinfo2 cpu-x kinfocenter org.kde.kinfocenter preferences-desktop-display lxqt-config-monitor arandr display-settings xfce-display-settings preferences-desktop-screensaver',
+ 'computer-laptop': 'virtualbox VirtualBox virt-manager gnome-boxes org.gnome.Boxes qemu remmina org.remmina.Remmina krdc org.kde.krdc rustdesk anydesk teamviewer x2goclient vmplayer',
+ 'drive-harddisk': 'org.gnome.DiskUtility gnome-disks gparted partitionmanager org.kde.partitionmanager baobab org.gnome.baobab filelight qdirstat deja-dup org.gnome.DejaDup timeshift backintime drive-multidisk',
+ 'printer': 'system-config-printer printer-settings print-manager cups simple-scan org.gnome.SimpleScan skanlite xsane scanner',
+ 'input-keyboard': 'preferences-desktop-keyboard preferences-desktop-keyboard-shortcuts klavaro ktouch org.kde.ktouch tuxtype',
+ 'input-mouse': 'preferences-desktop-peripherals preferences-desktop-mouse lxqt-config-input input-touchpad',
+ 'battery': 'preferences-system-power-management preferences-system-power lxqt-config-powermanagement xfce4-power-manager-settings org.xfce.powermanager gnome-power-manager org.gnome.PowerStats power-statistics',
+ 'network-wireless': 'nm-applet network-manager',
+ 'network-workgroup': 'preferences-system-network nm-connection-editor preferences-system-network-proxy lxqt-config-network org.gnome.Settings-network',
+ 'bluetooth': 'preferences-system-bluetooth blueman blueman-manager blueman-adapters blueman-sendto blueman-services bluedevil gnome-bluetooth',
+ 'org.gnome.clocks': 'time-admin',
+ 'camera-photo': 'applets-screenshooter accessories-screenshot screengrab flameshot org.flameshot.Flameshot gnome-screenshot org.gnome.Screenshot spectacle org.kde.spectacle xfce4-screenshooter',
+ 'preferences-desktop-accessibility': 'orca accessibility preferences-desktop-accessibility-zoom',
+ 'applications-multimedia': 'applications-music',
+ 'text-x-generic': 'text-markdown text-x-readme text-x-log text-x-changelog text-x-copying',
+ 'application-pdf': 'document-viewer accessories-document-viewer evince org.gnome.Evince qpdfview okular org.kde.okular atril xreader zathura mupdf papers org.gnome.Papers application-postscript image-vnd.djvu',
+ 'application-zip': 'archive-manager file-roller org.gnome.FileRoller lxqt-archiver xarchiver ark org.kde.ark engrampa p7zip squeeze utilities-file-archiver application-x-bzip application-x-xz application-x-tar application-gzip application-x-gzip application-x-zstd-compressed-tar application-x-xz-compressed-tar application-x-bzip-compressed-tar application-vnd.rar application-x-7z application-x-lzma',
+ 'application-x-deb': 'gdebi gdebi-kde qapt-deb-installer application-vnd.flatpak.ref application-vnd.snap',
+ 'application-x-executable': 'application-x-ms-dos-executable application-x-msdownload application-x-msi application-x-appimage application-vnd.appimage wine winecfg application-x-desktop application-default-icon',
+ 'image-x-generic': 'image-gif image-bmp image-webp image-tiff image-x-icon image-heic image-avif',
+ 'audio-x-generic': 'audio-flac audio-ogg audio-x-vorbis+ogg audio-mp4 audio-aac audio-midi audio-x-mpegurl',
+ 'video-x-generic': 'video-webm video-x-msvideo video-quicktime video-mpeg video-ogg',
+ 'text-x-script': 'application-x-shellscript text-x-java text-x-c++src text-x-chdr application-javascript text-javascript application-json text-x-makefile text-css application-x-python-bytecode',
+ 'system-search': 'catfish org.gnome.Nautilus-search kfind fsearch',
+ 'system-lock-screen': 'lxqt-lockscreen xscreensaver light-locker',
+ 'system-shutdown': 'lxqt-leave lxqt-shutdown gnome-session-halt xfsm-shutdown system-shutdown-panel',
+ 'eduka-lafa': 'applications-other',
+}
+for _name, _extra in EXTENSIONS.items():
+    _extend(_name, _extra)
+
+NEW_ENTRIES = {
+ 'help-browser': ('help','teal','apps','yelp org.gnome.Yelp help-contents system-help khelpcenter org.kde.khelpcenter dialog-question'),
+ 'dialog-error': ('error','coral','status','emblem-unreadable process-error'),
+ 'emblem-default': ('check','mint','emblems','emblem-ok emblem-checked task-complete'),
+ 'emblem-readonly': ('lock','cream','emblems','emblem-locked'),
+ 'system-reboot': ('update','sky','apps','system-restart lxqt-reboot gnome-session-reboot'),
+ 'system-suspend': ('moon','honey','apps','lxqt-suspend'),
+ 'system-hibernate': ('hibernate','sky','apps','lxqt-hibernate system-suspend-hibernate'),
+ 'preferences-system-time': ('clock-settings','teal','apps','preferences-system-date-time lxqt-admin-time'),
+ 'system-run': ('rocket','lavender','apps','gnome-run lxqt-runner krunner org.kde.krunner xfce4-appfinder'),
+ 'system-users': ('users','coral','apps','users lxqt-admin-user user-admin gnome-user-accounts preferences-system-users org.gnome.Settings-users system-switch-user'),
+ 'preferences-desktop-locale': ('globe','sky','apps','lxqt-config-locale config-language locale org.gnome.Settings-region applications-geography kgeography org.kde.kgeography marble org.kde.marble stellarium celestia org.gnome.Maps gnome-maps applications-astronomy eduka-language-pack-tet'),
+ 'preferences-desktop-sound': ('volume','teal','apps','pavucontrol pavucontrol-qt org.pulseaudio.pavucontrol multimedia-volume-control audio-volume-control lxqt-config-sound gnome-sound-properties'),
+ 'preferences-system-notifications': ('bell','honey','apps','lxqt-config-notificationd lxqt-notificationd notification-area preferences-desktop-notification notification'),
+ 'preferences-desktop-theme': ('palette','peach','apps','lxqt-config-appearance preferences-desktop-appearance preferences-desktop-color gnome-tweaks org.gnome.tweaks lxappearance qt5ct qt6ct kvantum kvantummanager'),
+ 'preferences-desktop-wallpaper': ('image','sky','apps','preferences-desktop-background nitrogen variety'),
+ 'preferences-desktop-font': ('font','cream','apps','font-manager org.gnome.font-viewer gnome-font-viewer font-x-generic application-x-font-ttf font-ttf application-x-font-otf'),
+ 'utilities-system-monitor': ('chart','cream','apps','qps lxqt-qps lxtask gnome-system-monitor org.gnome.SystemMonitor ksysguard plasma-systemmonitor org.kde.plasma-systemmonitor htop btop xfce4-taskmanager mate-system-monitor'),
+ 'accessories-dictionary': ('book','mint','apps','goldendict artha org.gnome.Dictionary gnome-dictionary anki kwordquiz parley khangman kanagram calibre calibre-gui com.calibre_ebook.calibre foliate com.github.johnfactotum.Foliate accessories-ebook-reader application-epub+zip'),
+ 'accessories-notes': ('notes','honey','apps','org.gnome.Notes xpad gnote tomboy cherrytree joplin obsidian simplenote standard-notes zim qownnotes knotes org.gnome.Todo gnome-todo planner errands'),
+ 'dialog-password': ('key','honey','apps','keepassxc org.keepassxc.KeePassXC seahorse org.gnome.seahorse.Application kwalletmanager bitwarden passwords password-manager'),
+ 'internet-download-manager': ('download','coral','apps','transmission transmission-gtk transmission-qt com.transmissionbt.Transmission qbittorrent org.qbittorrent.qBittorrent deluge ktorrent fragments de.haeckerfelix.Fragments uget motrix persepolis application-x-bittorrent'),
+ 'face-smile': ('smile','honey','emblems','face-smile-big face-laugh face-happy emoji'),
+ 'starred': ('star','honey','emblems','rating emblem-favorite-star bookmark-new user-bookmarks'),
+ 'package-x-generic': ('package','honey','mimetypes','application-x-addon package'),
+ 'application-x-extension': ('puzzle','mint','mimetypes','preferences-plugins extensions applications-utilities-extra'),
+ 'media-optical': ('disc','cream','devices','drive-optical media-optical-cd media-optical-dvd application-x-cd-image application-x-iso9660-image brasero k3b xfburn'),
+ 'audio-input-microphone': ('mic','cream','devices','microphone audio-input-microphone-high'),
+ 'phone': ('smartphone','sky','devices','smartphone kdeconnect org.kde.kdeconnect.app gsconnect multimedia-player-apple-ipod'),
+ 'x-office-address-book': ('users','coral','apps','org.gnome.Contacts gnome-contacts kaddressbook contacts text-x-vcard'),
+ 'graphics-editor': ('paint','honey','apps','gimp org.gimp.GIMP inkscape org.inkscape.Inkscape krita org.kde.krita mypaint org.mypaint.MyPaint pinta com.github.PintaProject.Pinta kolourpaint org.kde.kolourpaint drawing com.github.maoschanz.drawing tuxpaint darktable rawtherapee blender scribus applications-painting'),
+ 'multimedia-video-editor': ('video','coral','apps','kdenlive org.kde.kdenlive openshot org.openshot.OpenShot shotcut org.shotcut.Shotcut pitivi flowblade obs com.obsproject.Studio simplescreenrecorder vokoscreenNG kazam peek handbrake fr.handbrake.ghb'),
+ 'folder-desktop': ('folder-desktop','cream','places','user-desktop user-desktop-folder'),
+ 'folder-git': ('folder-git','cream','places','folder-development folder-code'),
+ 'folder-remote': ('folder-cloud','cream','places','folder-cloud folder-network network-server-folder folder-remote-ftp'),
+ 'folder-locked': ('folder-lock','cream','places','folder-lock folder-private'),
+ 'folder-text': ('folder-text','cream','places','folder-documents-open'),
+}
+for _name, _entry in NEW_ENTRIES.items():
+    if _name in CATALOG: raise ValueError(f'Duplicate catalog entry: {_name}')
+    CATALOG[_name] = _entry
+
+def duplicates():
+    """Return icon names claimed by more than one catalog entry."""
+    owners = {}
+    for name, (_, _, _, names) in CATALOG.items():
+        for other in {name, *names.split()}:
+            owners.setdefault(other, []).append(name)
+    return {n: o for n, o in owners.items() if len(o) > 1}
