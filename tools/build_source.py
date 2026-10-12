@@ -6,13 +6,13 @@ import json
 from pathlib import Path
 import tarfile
 import zipfile
-from check_source import ROOT, LIMIT, check
+from check_source import ROOT, LIMIT, VERSION, check
 
 def build(output):
     files, report = check()
     if report['errors']: raise SystemExit(json.dumps(report['errors']))
     output.mkdir(parents=True, exist_ok=True)
-    stem = 'Eduka-Icons-0.3.0-GitHub-source'
+    stem = f'Eduka-Icons-{VERSION}-source'
     prefix = 'Eduka-Icons'
     zip_path = output / (stem + '.zip')
     with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
@@ -34,7 +34,7 @@ def build(output):
     for path in (zip_path, tar_path):
         if path.stat().st_size >= LIMIT: raise SystemExit('Source archive exceeds the 25 MiB browser upload target.')
     report['archives'] = {p.name: p.stat().st_size for p in (zip_path, tar_path)}
-    (output / 'Eduka-Icons-0.3.0-source-size.json').write_text(json.dumps(report, indent=2) + '\n')
+    (output / f'Eduka-Icons-{VERSION}-source-size.json').write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps(report), flush=True)
 
 if __name__ == '__main__':

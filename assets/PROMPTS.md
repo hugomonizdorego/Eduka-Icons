@@ -1,9 +1,10 @@
-# Prompt aset clay 0.3.0
+# Clay master prompts (0.3.0)
 
-Metode: built-in imagegen, satu panggilan per aset, gambar pengguna sebagai
-referensi gaya, latar alpha transparan. File final ada di assets/clay.
+Method: built-in image generation, one call per asset, with the user's image as
+the style reference and a transparent alpha background. The 17 results are the
+lossless masters in `assets/masters/`.
 
-Prompt dasar: ONE isolated Linux desktop icon for Eduka-Icons 0.3.0.
+Base prompt: ONE isolated Linux desktop icon for Eduka-Icons 0.3.0.
 The uploaded image is the definitive style reference. Match its handmade
 sculpted clay material, thick soft rounded edges, tiny matte grain,
 cream/ivory, burnt orange, golden yellow, muted olive and pale dusty aqua,
@@ -12,25 +13,25 @@ object, nearly front view with slight right-side depth, filling 82–84% of a
 square canvas with even transparent padding. True transparent alpha.
 No app tile, no opaque backdrop, no scene, no glow, no gloss, no text.
 
-| Aset | Instruksi subjek |
+| Asset | Subject |
 | --- | --- |
-| folder | Folder aqua terbuka, tab krem, lembar ivory, clasp krem dan tombol oranye. |
-| home | Rumah ivory, atap kuning tebal, cerobong oranye, pintu olive, jendela aqua. |
-| browser | Kompas ivory, ring charcoal, jarum oranye/kuning; peta aqua/olive/gold di belakang, mengikuti kompas referensi. |
-| camera | Kamera polaroid ivory/olive, lensa charcoal, tombol kuning, print oranye, foto gunung di belakang, mengikuti referensi. |
-| education | Backpack olive, flap ivory, pouch oranye, buckle kuning dan jahitan clay, mengikuti referensi. |
-| files | Suitcase olive, bagian atas/handle ivory, latch oranye/kuning, mengikuti referensi. |
-| settings | Gear ivory delapan gigi membulat, pusat kuning, axle oranye, sisi olive. |
-| terminal | Monitor charcoal, bezel ivory, stand olive, chevron oranye, underscore ivory. |
-| document | Kertas ivory bersudut terlipat, garis olive, tab kuning, pensil oranye. |
-| music | Radio olive, muka ivory, speaker charcoal, dial oranye, handle kuning. |
-| mail | Amplop ivory, flap segitiga, wax seal oranye, sisi olive, sedikit miring. |
-| chat | Dua speech bubble ivory/olive, tiga titik oranye, ekor sculpted. |
-| store | Shopping bag ivory, sisi olive, handle kuning, paket clay oranye di depan. |
-| shield | Shield olive, rim ivory, check kuning, padlock oranye di kanan bawah. |
-| bulb | Bohlam kuning, filament oranye, screw base ivory/olive, tanpa glow. |
-| calendar | Kalender ivory, bar oranye, ring kuning, grid olive, satu tanggal oranye, tanpa angka. |
-| trash | Wastebasket ivory, rusuk olive, tutup kuning, knob oranye. |
+| folder | Open aqua folder, cream tab, ivory sheets, cream clasp with an orange button. |
+| home | Ivory house, thick yellow roof, orange chimney, olive door, aqua window. |
+| browser | Ivory compass, charcoal ring, orange/yellow needle; aqua/olive/gold map behind it. |
+| camera | Ivory/olive instant camera, charcoal lens, yellow button, orange print, mountain photo behind. |
+| education | Olive backpack, ivory flap, orange pouch, yellow buckle and clay stitching. |
+| files | Olive suitcase, ivory top and handle, orange/yellow latches. |
+| settings | Ivory gear with eight rounded teeth, yellow centre, orange axle, olive sides. |
+| terminal | Charcoal monitor, ivory bezel, olive stand, orange chevron, ivory underscore. |
+| document | Ivory paper with folded corner, olive lines, yellow tab, orange pencil. |
+| music | Olive radio, ivory face, charcoal speaker, orange dial, yellow handle. |
+| mail | Ivory envelope, triangular flap, orange wax seal, olive side, slightly tilted. |
+| chat | Two ivory/olive speech bubbles, three orange dots, sculpted tails. |
+| store | Ivory shopping bag, olive side, yellow handle, orange clay parcel in front. |
+| shield | Olive shield, ivory rim, yellow check, orange padlock at the lower right. |
+| bulb | Yellow bulb, orange filament, ivory/olive screw base, no glow. |
+| calendar | Ivory calendar, orange bar, yellow rings, olive grid, one orange date, no numbers. |
+| trash | Ivory wastebasket, olive ribs, yellow lid, orange knob. |
 
-Komposisi vektor lain dijelaskan di tools/clay.py, tools/prepare_clay.py
-dan assets/manifest.json. Ekspor ukuran ditujukan untuk tema OS.
+All other artwork is composed in code (`tools/artwork.py`, `tools/clay.py`)
+and rendered offline by `tools/prepare_clay.py`.

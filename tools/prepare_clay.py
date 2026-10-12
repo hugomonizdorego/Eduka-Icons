@@ -23,7 +23,8 @@ def prepare():
     encoded.cache_clear()
     required = {source_for(name, kind) for name, (kind, _, _, _) in CATALOG.items()}
     required.update('folder-' + k for k in ('plain', 'home', 'download', 'music',
-                    'pictures', 'video', 'share', 'lock', 'templates', 'git', 'cloud', 'text'))
+                    'pictures', 'video', 'share', 'lock', 'templates', 'git', 'cloud', 'text',
+                    'desktop'))
     for name in sorted(required):
         destination = ASSETS / (name + '.png')
         if name.startswith('folder-'):

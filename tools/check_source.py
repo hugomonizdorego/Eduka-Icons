@@ -6,6 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 TOP_FILES = ('README.md', 'CHANGELOG.md', 'LICENSE', 'VERSION', 'Makefile',
              'requirements.txt', '.gitignore', '.gitattributes')
+VERSION = (ROOT / 'VERSION').read_text().strip() if (ROOT / 'VERSION').is_file() else ''
 TOP_DIRECTORIES = ('tools', 'assets', 'docs', '.github')
 LIMIT = 25 * 1024 * 1024
 
@@ -24,13 +25,13 @@ def check():
         elif path.is_symlink(): errors.append(f'Source symlink: {path.relative_to(ROOT)}')
         elif path.stat().st_size >= LIMIT: errors.append(f'GitHub browser size limit: {path.relative_to(ROOT)}')
         if any('papirus' in part.lower() for part in path.relative_to(ROOT).parts):
-            errors.append(f'Upstream source unexpectedly included: {path.relative_to(ROOT)}')
+            errors.append(f'Upstream icon files unexpectedly included: {path.relative_to(ROOT)}')
         if path.suffix.lower() in ('.deb', '.tar', '.gz', '.zip', '.xz', '.cache'):
             errors.append(f'Build artifact in source: {path.relative_to(ROOT)}')
-    result = {'version': '0.3.0', 'edition': 'Standalone', 'source_files': len(files),
+    result = {'version': VERSION, 'edition': 'Standalone', 'source_files': len(files),
               'total_bytes': sum(p.stat().st_size for p in files if p.is_file()),
               'largest_file_bytes': max((p.stat().st_size for p in files if p.is_file()), default=0),
-              'papirus_assets': 0, 'errors': errors}
+              'errors': errors}
     return files, result
 
 if __name__ == '__main__':
