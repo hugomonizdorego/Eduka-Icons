@@ -23,7 +23,24 @@ LOOK = {
              'accent': '#26a69a', 'desktop': 'Edukasaun-Dark'},
     'Bright': {'bg': ('#fde9c8', '#c9ecf0'), 'surface': '#ffffff', 'text': '#2c3a35', 'muted': '#5f6f69',
                'accent': '#5b6ee1', 'desktop': 'Eduka-MultiColor'},
+    'Comfort': {'bg': ('#f7efe0', '#ecdcc0'), 'surface': '#fffaf1', 'text': '#1d1a14', 'muted': '#4a4236',
+                'accent': '#0f5c53', 'desktop': 'eye comfort and low vision'},
 }
+APPS = [
+ ('gimp', 'GIMP'), ('inkscape', 'Inkscape'), ('krita', 'Krita'), ('blender', 'Blender'), ('org.kde.kolourpaint', 'KolourPaint'),
+ ('tuxpaint', 'Tux Paint'), ('google-chrome', 'Chrome'), ('brave-browser', 'Brave'), ('firefox', 'Firefox'),
+ ('google-earth-pro', 'Google Earth'), ('whatsapp', 'WhatsApp'), ('telegram', 'Telegram'), ('discord', 'Discord'),
+ ('signal-desktop', 'Signal'), ('zoom', 'Zoom'), ('thunderbird', 'Thunderbird'), ('vlc', 'VLC'), ('audacity', 'Audacity'),
+ ('obs', 'OBS'), ('kdenlive', 'Kdenlive'), ('spotify', 'Spotify'), ('steam', 'Steam'), ('supertuxkart', 'SuperTuxKart'),
+ ('minetest', 'Minetest'), ('gcompris', 'GCompris'), ('kalzium', 'Kalzium'), ('marble', 'Marble'), ('kgeography', 'KGeography'),
+ ('tuxmath', 'Tux Math'), ('kbruch', 'KBruch'), ('khangman', 'KHangMan'), ('ktuberling', 'KTuberling'), ('geogebra', 'GeoGebra'),
+ ('stellarium', 'Stellarium'), ('anki', 'Anki'), ('scratch-desktop', 'Scratch'), ('libreoffice-base', 'Base'),
+ ('onlyoffice-desktopeditors', 'ONLYOFFICE'), ('calibre', 'Calibre'), ('code', 'VS Code'), ('thonny', 'Thonny'),
+ ('org.kde.dolphin', 'Dolphin'), ('org.gnome.Nautilus', 'Files'), ('pcmanfm-qt', 'PCManFM-Qt'), ('qterminal', 'QTerminal'),
+ ('featherpad', 'FeatherPad'), ('lximage-qt', 'LXImage'), ('screengrab', 'ScreenGrab'), ('obconf-qt', 'Openbox'),
+ ('synaptic', 'Synaptic'), ('gparted', 'GParted'), ('keepassxc', 'KeePassXC'), ('virtualbox', 'VirtualBox'),
+ ('blueman-manager', 'Bluetooth'), ('fcitx5', 'Fcitx 5'),
+]
 GRID = [
  ('edukasaun', 'Edukasaun'), ('system-file-manager', 'Files'), ('internet-web-browser', 'Browser'),
  ('internet-mail', 'Mail'), ('eduka-konekta', 'Konekta'), ('utilities-terminal', 'Terminal'),
@@ -67,13 +84,52 @@ def theme_dir(variant):
 
 
 def icon(variant, name, size):
-    theme = theme_dir(variant)
-    for directory in sorted(theme.glob(f'{max(size, 256)}x{max(size, 256)}/*')) + sorted(theme.glob('512x512/*')):
+    apps = ROOT / 'build/themes' / ('Eduka-Icons-Apps-Comfort' if variant == 'Comfort' else 'Eduka-Icons-Apps')
+    candidates = [*sorted(theme_dir(variant).glob('256x256/*')), *sorted(theme_dir(variant).glob('512x512/*')),
+                  *apps.glob('128x128/apps')]
+    for directory in candidates:
         path = directory / (name + '.png')
         if path.exists():
             with Image.open(path) as image:
                 return image.convert('RGBA').resize((size, size), Image.Resampling.LANCZOS)
     raise FileNotFoundError(name)
+
+
+def apps_sheet(variant):
+    look = LOOK[variant]
+    cols = 11
+    rows = (len(APPS) + cols - 1) // cols
+    canvas = gradient((1600, 210 + rows * 150), *look['bg']).convert('RGBA')
+    draw = ImageDraw.Draw(canvas)
+    draw.text((56, 40), f'Every application has its own clay icon · Eduka-Icons-{variant}', font=font(34, True), fill=look['text'])
+    draw.text((58, 92), 'Graphics, internet, chat, media, games, education, office, development, LXQt, KDE and GNOME',
+              font=font(19), fill=look['muted'])
+    for i, (name, title) in enumerate(APPS):
+        x, y = 50 + (i % cols) * 138, 150 + (i // cols) * 150
+        canvas.alpha_composite(icon(variant, name, 96), (x + 16, y))
+        width = draw.textlength(title, font=font(15))
+        draw.text((x + 64 - width / 2, y + 104), title, font=font(15), fill=look['text'])
+    return canvas
+
+
+def panel_sheet(temporary):
+    """Colourful clay panel icons and two-tone symbolic icons."""
+    names = ('network-wireless-signal-excellent', 'bluetooth-active', 'audio-volume-high', 'battery-full-charging',
+             'display-brightness', 'notification-active', 'system-shutdown', 'system-reboot', 'system-lock-screen',
+             'edit-copy', 'edit-paste', 'edit-undo', 'document-save', 'document-open', 'list-add', 'go-next',
+             'view-refresh', 'zoom-in', 'media-playback-start', 'starred', 'dialog-warning', 'night-light')
+    canvas = Image.new('RGBA', (1600, 760), '#f4f1ea')
+    draw = ImageDraw.Draw(canvas)
+    draw.rectangle((0, 380, 1600, 760), fill='#262b27')
+    for half, (variant, color) in enumerate((('Light', '#2f3a33'), ('Dark', '#f1ece2'))):
+        top = half * 380
+        draw.text((40, top + 24), f'Clay panel icons · {variant}', font=font(22, True), fill=color)
+        for i, name in enumerate(names):
+            canvas.alpha_composite(icon(variant, name, 52), (40 + i * 70, top + 70))
+        draw.text((40, top + 160), 'Symbolic icons (two-tone; GTK and KDE recolour them automatically)', font=font(18), fill=color)
+        for i, name in enumerate(names):
+            canvas.alpha_composite(glyph(variant, name, 32, temporary), (50 + i * 70, top + 210))
+    return canvas
 
 
 def glyph(variant, name, size, temporary):
@@ -162,10 +218,10 @@ def desktop(variant, temporary):
         if i < 3:
             draw.rounded_rectangle((408 + i * 64, 963, 424 + i * 64, 966), 2, fill=look['accent'])
     for i, name in enumerate(TRAY):
-        canvas.alpha_composite(glyph(variant, name, 22, temporary), (1000 + i * 32, 925))
+        canvas.alpha_composite(icon(variant, name, 26), (996 + i * 32, 923))
     draw.text((1196, 924), '10:24', font=font(18, True), fill=look['text'])
-    draw.text((width - 520, 24), f'Eduka-Desktop · {look["desktop"]} · Eduka-Icons-{variant}',
-              font=font(16), fill=look['muted'])
+    caption = f'Eduka-Desktop · {look["desktop"]} · Eduka-Icons-{variant}'
+    draw.text((width - 40 - draw.textlength(caption, font=font(16)), 24), caption, font=font(16), fill=look['muted'])
     return canvas
 
 
@@ -189,9 +245,9 @@ def symbolic_sheet(temporary):
 
 
 def variants_strip():
-    canvas = Image.new('RGBA', (1500, 420), '#ffffff')
+    canvas = Image.new('RGBA', (2000, 420), '#ffffff')
     names = ('folder', 'user-home', 'edukasaun', 'internet-web-browser', 'preferences-system', 'multimedia-audio-player')
-    for column, variant in enumerate(('Light', 'Dark', 'Bright')):
+    for column, variant in enumerate(('Light', 'Dark', 'Bright', 'Comfort')):
         look = LOOK[variant]
         part = gradient((500, 420), *look['bg']).convert('RGBA')
         draw = ImageDraw.Draw(part)
@@ -212,7 +268,9 @@ def main():
         for variant in LOOK:
             overview(variant, temporary).convert('RGB').save(output / f'overview-{variant.lower()}.png', optimize=True)
             desktop(variant, temporary).convert('RGB').save(output / f'desktop-{variant.lower()}.png', optimize=True)
+            apps_sheet(variant).convert('RGB').save(output / f'apps-{variant.lower()}.png', optimize=True)
         symbolic_sheet(temporary).convert('RGB').save(output / 'symbolic.png', optimize=True)
+        panel_sheet(temporary).convert('RGB').save(output / 'panel.png', optimize=True)
     variants_strip().convert('RGB').save(output / 'variants.png', optimize=True)
     for path in sorted(output.glob('*.png')):
         print(path)

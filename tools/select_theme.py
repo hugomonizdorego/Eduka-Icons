@@ -18,7 +18,8 @@ import shutil
 import subprocess
 import sys
 
-VARIANTS = ('Light', 'Dark', 'Bright')
+VARIANTS = ('Light', 'Dark', 'Bright', 'Comfort')
+HIDDEN = ('Eduka-Icons-Apps', 'Eduka-Icons-Apps-Comfort')
 PREFIX = 'Eduka-Icons-'
 STATE = Path('/var/lib/eduka-icons')
 GSCHEMA_DIR = Path('/usr/share/glib-2.0/schemas')
@@ -283,6 +284,8 @@ def follow_once(quiet=True):
     current = current_user_theme()
     if current and not current.startswith(PREFIX):
         return False  # A different icon theme was chosen; respect it.
+    if current == theme_name('Comfort'):
+        return False  # Accessibility choice: never switched automatically.
     variant = desktop_variant()
     wanted = theme_name(variant)
     chosen_by_user = bool(read_ini_value(config / 'lxqt/lxqt.conf', 'General', 'icon_theme'))
@@ -392,11 +395,11 @@ def reset_system(quiet=False):
 def install_from_build(destination, quiet=False):
     root = Path(__file__).resolve().parents[1]
     destination.mkdir(parents=True, exist_ok=True)
-    for variant in VARIANTS:
-        source = root / 'build/themes' / theme_name(variant)
+    for name in (*HIDDEN, *(theme_name(v) for v in VARIANTS)):
+        source = root / 'build/themes' / name
         if not (source / 'index.theme').is_file():
             raise SystemExit('Run "make build" before installing from source.')
-        target = destination / theme_name(variant)
+        target = destination / name
         if target.is_symlink():
             raise SystemExit(f'Refusing to overwrite a theme-directory symlink: {target}')
         if target.exists():
@@ -404,13 +407,13 @@ def install_from_build(destination, quiet=False):
         shutil.copytree(source, target, symlinks=True, ignore=shutil.ignore_patterns('.eduka-build-owner'))
         if shutil.which('gtk-update-icon-cache'):
             run(['gtk-update-icon-cache', '-q', '-f', '-t', str(target)])
-        log(f'Installed {theme_name(variant)} in {target}', quiet)
+        log(f"Installed {name} in {target}", quiet)
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(prog='eduka-icons-select', description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('--apply', choices=VARIANTS, help='select Light, Dark or Bright')
+    parser.add_argument('--apply', choices=VARIANTS, help='select Light, Dark, Bright or Comfort (eye comfort / low vision)')
     parser.add_argument('--system-defaults', action='store_true',
                         help='with --apply: set the default for all new users and the live ISO (root)')
     parser.add_argument('--reset-system-defaults', action='store_true', help='remove the system defaults (root)')
@@ -441,7 +444,7 @@ def main(argv=None):
             state.update(enabled=bool(args.follow_desktop), last_applied=theme_name(args.apply))
             write_follow_state(state)
     elif args.system_defaults:
-        parser.error('--system-defaults needs --apply Light, Dark or Bright')
+        parser.error('--system-defaults needs --apply Light, Dark, Bright or Comfort')
     if args.follow_desktop and not args.apply:
         if os.geteuid() == 0:
             raise SystemExit('--follow-desktop runs in the desktop account, not as root.')

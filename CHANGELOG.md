@@ -1,5 +1,34 @@
 # Eduka-Icons
 
+## 0.5.0
+
+- **Every application has its own icon.** The Papirus application catalog
+  (3,700+ artworks, 8,300+ names, GPL-3.0) is converted to Eduka clay at
+  build time: GIMP, Inkscape and Krita, Chrome, Brave, Firefox, Google Earth,
+  WhatsApp, Telegram, Discord, VLC, Steam, KDE (apps.kde.org), GNOME
+  (apps.gnome.org), LXQt, education, games, office, audio and video apps no
+  longer share generic artwork.
+- Applications that would still share one picture (e.g. several apps whose
+  upstream icon is the generic terminal or settings icon) get a unique clay
+  copy with their own coloured monogram chip.
+- **New Eduka-Icons-Comfort** for eye comfort and low vision: dark contour
+  around every icon, warm low-blue colours, raised contrast, thicker
+  high-contrast symbolic glyphs. Never switched automatically.
+- **Colourful clay panel icons**: Wi-Fi, Bluetooth, volume, battery,
+  brightness, notifications, power and toolbar actions are sculpted 3D clay
+  in colour. Symbolic (`-symbolic`) icons are two-tone colour; GTK and KDE
+  still recolour them for their headerbars.
+- **`eduka-icons-clayify`**: applications installed later (apt, Flatpak,
+  Snap) that ship only their own flat icon get a clay icon automatically
+  (APT hook and a systemd path unit).
+- LXQt configuration modules, Bluetooth managers, input-method tools and the
+  education apps from Edukasaun OS 0.9.24 now each have distinct icons.
+- New hidden shared themes Eduka-Icons-Apps / -Apps-Comfort (inherited by all
+  variants) and Eduka-Icons-Local / -Local-Comfort (generated on the system).
+- Packages: `eduka-icons` (themes and tools), `eduka-icons-apps` and
+  `eduka-icons-apps-comfort` (application icons).
+- Coverage report extended with LXQt, KDE, GNOME and popular application lists.
+
 ## 0.4.0
 
 - New **Eduka-Icons-Bright** theme: livelier, more saturated clay colours for

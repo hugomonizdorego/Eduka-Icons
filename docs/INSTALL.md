@@ -1,18 +1,31 @@
 # Installing Eduka-Icons
 
-## 1. Debian package (recommended)
+## 1. Debian packages (recommended)
+
+Eduka-Icons comes as three packages; install them together:
 
 ```sh
-sudo apt install ./eduka-icons_0.4.0_all.deb
+sudo apt install ./eduka-icons_0.5.0_all.deb ./eduka-icons-apps_0.5.0_all.deb \
+                 ./eduka-icons-apps-comfort_0.5.0_all.deb
 ```
 
-The package installs:
+| Package | Content |
+| --- | --- |
+| `eduka-icons` | the four themes, `eduka-icons-select`, `eduka-icons-clayify` |
+| `eduka-icons-apps` | clay icons for thousands of applications (required) |
+| `eduka-icons-apps-comfort` | the same in the eye-comfort edition (recommended) |
+
+The `eduka-icons` package installs:
 
 | Path | Content |
 | --- | --- |
 | `/usr/share/icons/Eduka-Icons-Light` | default theme |
 | `/usr/share/icons/Eduka-Icons-Dark` | for dark desktop themes |
 | `/usr/share/icons/Eduka-Icons-Bright` | vivid colours |
+| `/usr/share/icons/Eduka-Icons-Comfort` | eye comfort and low vision |
+| `/usr/bin/eduka-icons-clayify` | clay icons for applications installed later |
+| `/etc/apt/apt.conf.d/80eduka-icons-clayify` | runs `eduka-icons-clayify` after every apt/dpkg run |
+| `eduka-icons-clayify.path` (systemd) | runs it when Flatpak or Snap applications change |
 | `/usr/bin/eduka-icons-select` | theme selector |
 | `/etc/xdg/autostart/eduka-icons-follow.desktop` | follows the Eduka-Desktop theme in LXQt/Eduka sessions |
 
@@ -21,7 +34,7 @@ the default for new accounts and the live session. Environment variables:
 
 | Variable | Effect |
 | --- | --- |
-| `EDUKA_ICONS_DEFAULT=Dark` or `Bright` | use that variant as the default |
+| `EDUKA_ICONS_DEFAULT=Dark`, `Bright` or `Comfort` | use that variant as the default |
 | `EDUKA_ICONS_NO_DEFAULT=1` | install the themes without changing defaults |
 
 Upgrades keep whatever default is in place. Removing the package
@@ -30,19 +43,21 @@ Upgrades keep whatever default is in place. Removing the package
 ## 2. Cubic (building the Edukasaun OS ISO)
 
 1. In Cubic, open the **Terminal** step (chroot).
-2. Drag `eduka-icons_0.4.0_all.deb` into the terminal window (or use Cubic's
-   copy button). It lands in the current folder.
+2. Drag the three `.deb` files (`eduka-icons`, `eduka-icons-apps`,
+   `eduka-icons-apps-comfort`) into the terminal window (or use Cubic's copy
+   button). They land in the current folder.
 3. Install it with apt so the dependencies come from the Debian archive:
 
    ```sh
    apt update
-   apt install -y ./eduka-icons_0.4.0_all.deb
+   apt install -y ./eduka-icons_0.5.0_all.deb ./eduka-icons-apps_0.5.0_all.deb \
+                  ./eduka-icons-apps-comfort_0.5.0_all.deb
    ```
 
    For another default variant:
 
    ```sh
-   EDUKA_ICONS_DEFAULT=Bright apt install -y ./eduka-icons_0.4.0_all.deb
+   EDUKA_ICONS_DEFAULT=Bright apt install -y ./eduka-icons*_0.5.0_all.deb
    ```
 
 4. Check and clean up:
@@ -50,7 +65,7 @@ Upgrades keep whatever default is in place. Removing the package
    ```sh
    dpkg -s eduka-icons | grep -E 'Status|Version'
    grep icon_theme /etc/xdg/lxqt/lxqt.conf     # icon_theme=Eduka-Icons-Light
-   rm ./eduka-icons_0.4.0_all.deb
+   rm ./eduka-icons*_0.5.0_all.deb
    ```
 
 Installation order with `edukasaun-desktop-menu` does not matter. To change
@@ -82,7 +97,7 @@ copy of the original is kept once as `<file>.eduka-icons-backup`.
 ## 3. Choosing a theme as a user
 
 ```sh
-eduka-icons-select --apply Light    # or Dark, Bright
+eduka-icons-select --apply Light    # or Dark, Bright, Comfort
 ```
 
 This updates, for the current account only: LXQt/Eduka-Desktop, GTK 2/3/4,
@@ -105,7 +120,38 @@ It only switches between Eduka-Icons variants. If a user picks an icon theme
 by hand (Eduka-Settings, `--apply`, or a non-Eduka theme such as Papirus), the
 follower stops. Turn it back on with `eduka-icons-select --follow-desktop`.
 
-## 4. From source without a package
+## 4. Eye comfort and low vision
+
+`Eduka-Icons-Comfort` is made for people with low vision, light sensitivity
+or long screen sessions:
+
+- a dark contour around every icon, so it stands out on any wallpaper or
+  panel colour;
+- warmer colours with less blue light and less glaring saturation;
+- higher contrast inside the artwork;
+- thicker, high-contrast symbolic glyphs.
+
+Select it with `eduka-icons-select --apply Comfort` (or in Eduka-Settings →
+Appearance). The Eduka-Desktop theme follower never switches away from it.
+
+## 5. Applications installed later
+
+`eduka-icons-clayify` finds every installed application (Debian packages,
+Flatpak, Snap, `~/.local`) whose icon is not drawn by Eduka-Icons yet, turns
+its own icon into clay and stores it in the hidden themes
+`Eduka-Icons-Local` and `Eduka-Icons-Local-Comfort`. It runs automatically
+after every apt/dpkg operation and when Flatpak/Snap applications change.
+
+```sh
+sudo eduka-icons-clayify            # all users
+eduka-icons-clayify --user          # applications installed in your account
+sudo eduka-icons-clayify --rebuild  # regenerate everything
+```
+
+Applications that point to an icon file by absolute path cannot be themed by
+any icon theme.
+
+## 6. From source without a package
 
 ```sh
 make build

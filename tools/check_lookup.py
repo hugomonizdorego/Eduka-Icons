@@ -7,7 +7,7 @@ import ctypes as C
 import ctypes.util
 from pathlib import Path
 
-NAMES = ('folder', 'user-home', 'pcmanfm-qt', 'firefox', 'eduka-konekta', 'libreoffice-writer',
+NAMES = ('folder', 'user-home', 'system-file-manager', 'internet-web-browser', 'eduka-konekta', 'libreoffice-writer',
          'preferences-desktop-locale', 'utilities-system-monitor', 'help-about', 'face-smile',
          'network-wireless-signal-excellent', 'battery-full-symbolic')
 SYMBOLIC = ('network-wireless-signal-excellent-symbolic', 'emblem-ok-symbolic', 'window-close-symbolic',
@@ -58,7 +58,11 @@ def _alpha(pixels, pixbuf):
     return covered, width * height
 
 
-def check(base, variants=('Light', 'Dark', 'Bright')):
+APPS = ('gimp', 'inkscape', 'krita', 'google-chrome', 'brave-browser', 'telegram-desktop', 'whatsapp',
+        'pcmanfm-qt', 'org.kde.kalzium', 'org.gnome.Nautilus', 'steam')
+
+
+def check(base, variants=('Light', 'Dark', 'Bright', 'Comfort')):
     libraries = _libraries()
     if not libraries:
         return {'status': 'unavailable', 'reason': 'GTK 3 runtime libraries not installed'}
@@ -89,6 +93,20 @@ def check(base, variants=('Light', 'Dark', 'Bright')):
                         rows.append({'variant': variant, 'name': name, 'size': size, 'scale': scale,
                                      'file': str(Path(filename).relative_to(root))})
                     finally: objects.g_object_unref(info)
+            apps_theme = root / ('Eduka-Icons-Apps-Comfort' if variant == 'Comfort' else 'Eduka-Icons-Apps')
+            seen = {}
+            for name in APPS:
+                for size, scale in ((16, 1), (48, 1), (64, 2)):
+                    info = gtk.gtk_icon_theme_lookup_icon_for_scale(theme, name.encode(), size, scale, 0)
+                    assert info, f'GTK app lookup missing: {variant} {name}'
+                    try:
+                        filename = Path(gtk.gtk_icon_info_get_filename(info).decode())
+                        assert filename.resolve().is_relative_to(apps_theme), (variant, name, filename)
+                        if size == 48: seen.setdefault(filename.resolve(), []).append(name)
+                    finally: objects.g_object_unref(info)
+                rows.append({'variant': variant, 'name': name, 'app_theme': 'ok'})
+            shared = {str(k): v for k, v in seen.items() if len(v) > 1}
+            assert not shared, f'Different applications share one icon: {shared}'
             red = RGBA(1.0, 0.0, 0.0, 1.0)
             for name in SYMBOLIC:
                 info = gtk.gtk_icon_theme_lookup_icon_for_scale(theme, name.encode(), 32, 1, 1 << 4)

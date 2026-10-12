@@ -6,6 +6,7 @@ all: build
 
 build:
 	$(PYTHON) tools/build_theme.py
+	$(PYTHON) tools/build_apps.py
 
 test:
 	$(PYTHON) tools/check_source.py
@@ -22,7 +23,8 @@ deb:
 
 release: deb
 	mkdir -p release
-	cp dist/eduka-icons_$(VERSION)_all.deb release/
+	rm -f release/*.deb
+	cp dist/*_$(VERSION)_all.deb release/
 
 source:
 	$(PYTHON) tools/build_source.py

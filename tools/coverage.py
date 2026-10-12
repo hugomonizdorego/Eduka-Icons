@@ -3,7 +3,7 @@
 import json
 from pathlib import Path
 from build_theme import ROOT
-from reference_names import EDUKA_DESKTOP, FREEDESKTOP, DESKTOP_APPS
+from reference_names import EDUKA_DESKTOP, FREEDESKTOP, DESKTOP_APPS, LXQT, KDE, GNOME, POPULAR
 
 FALLBACK_ROOTS = [Path('/usr/share/icons'), Path('/usr/local/share/icons')]
 
@@ -16,14 +16,15 @@ def names_in(theme):
 
 def coverage(variant='Light'):
     theme = ROOT / f'build/themes/Eduka-Icons-{variant}'
-    own = names_in(theme)
+    own = names_in(theme) | names_in(ROOT / 'build/themes/Eduka-Icons-Apps')
     fallback = set()
     for root in FALLBACK_ROOTS:
-        for name in ('Papirus', 'Papirus-Light', 'breeze', 'Adwaita', 'hicolor'):
+        for name in ('breeze', 'Adwaita', 'hicolor'):
             if (root / name).is_dir():
                 fallback |= names_in(root / name)
     report = {'variant': variant, 'own_names': len(own), 'fallback_themes_found': bool(fallback), 'lists': {}}
-    for label, names in (('eduka-desktop', EDUKA_DESKTOP), ('freedesktop', FREEDESKTOP), ('desktop-apps', DESKTOP_APPS)):
+    for label, names in (('eduka-desktop', EDUKA_DESKTOP), ('freedesktop', FREEDESKTOP), ('desktop-apps', DESKTOP_APPS),
+                         ('lxqt', LXQT), ('kde', KDE), ('gnome', GNOME), ('popular', POPULAR)):
         names = sorted(set(names))
         eduka = [n for n in names if n in own or n + '-symbolic' in own]
         backup = [n for n in names if n not in eduka and n in fallback]

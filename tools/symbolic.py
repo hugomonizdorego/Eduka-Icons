@@ -9,7 +9,42 @@ import math
 from outline import stroke, fill, _disc, _fmt
 
 # Symbolic foreground per theme variant (used by Qt and non-recolouring hosts).
-COLORS = {'Light': '#3d463b', 'Dark': '#f3ecdf', 'Bright': '#2c3a35'}
+# Two-tone colours per hue and variant. GTK and KDE still recolour the glyphs to
+# the text colour (the artwork is one filled path); Qt panels such as
+# Eduka-Panel and plain SVG viewers show the colours.
+HUES = ('teal', 'coral', 'honey', 'olive', 'blue', 'plum', 'rose')
+PALETTES = {
+    'Light': {'teal': ('#2f8a7e', '#1f5c55'), 'coral': ('#cf5d2e', '#9e3f1c'), 'honey': ('#c08e1c', '#8f6714'),
+              'olive': ('#678530', '#465c20'), 'blue': ('#3f74ad', '#2c527d'), 'plum': ('#8160ad', '#5b4180'),
+              'rose': ('#bb4c63', '#8a3547')},
+    'Dark': {'teal': ('#9edcd1', '#6cbfb2'), 'coral': ('#f6b08d', '#e8865a'), 'honey': ('#f8dc8c', '#ecbf4f'),
+             'olive': ('#cfe09b', '#a9c266'), 'blue': ('#b8d3f3', '#86afe3'), 'plum': ('#d5c3f1', '#b097e0'),
+             'rose': ('#f4b5c1', '#e5879a')},
+    'Bright': {'teal': ('#17b29c', '#0e7f70'), 'coral': ('#f6763b', '#cf4f15'), 'honey': ('#f0b42a', '#c48a06'),
+               'olive': ('#7cb534', '#558419'), 'blue': ('#3a8ae8', '#1e62b8'), 'plum': ('#9566ec', '#6b3fc9'),
+               'rose': ('#e8577a', '#bd2f52')},
+    'Comfort': {'teal': ('#0f5c53', '#073d37'), 'coral': ('#8f3410', '#5e1f06'), 'honey': ('#7a5600', '#4f3700'),
+                'olive': ('#3e5612', '#283a08'), 'blue': ('#164377', '#0b2a4f'), 'plum': ('#4a2c78', '#2f1a52'),
+                'rose': ('#7d2236', '#541322')},
+}
+# Clay panel icons (non-symbolic names) use the same hues, softened.
+CLAY = {hue: tuple(c for c in pair) for hue, pair in PALETTES['Bright'].items()}
+COLORS = {variant: palette['teal'][1] for variant, palette in PALETTES.items()}
+SEMANTIC = [
+    ('rose', ('power', 'error', 'stop', 'record', 'close', 'heart', 'bug', 'reboot', 'logout', 'stop-process', 'microphone-off', 'bell-off', 'eye-off', 'wifi-off', 'wired-off', 'bluetooth-off', 'volume-mute')),
+    ('olive', ('battery', 'check', 'select-all', 'power-saver', 'balanced', 'plus', 'download', 'upload', 'package', 'flask', 'education')),
+    ('blue', ('wifi', 'wired', 'bluetooth', 'globe', 'link', 'vpn', 'airplane', 'cloud', 'send', 'mail', 'call', 'chat', 'computer', 'display', 'laptop', 'phone', 'tablet', 'info', 'search', 'zoom')),
+    ('plum', ('volume', 'microphone', 'headphones', 'speaker', 'play', 'pause', 'next', 'previous', 'eject', 'repeat', 'shuffle', 'music', 'film', 'theme', 'font', 'language', 'user', 'users', 'accessibility')),
+    ('honey', ('warning', 'star', 'bell', 'brightness', 'sun', 'suspend', 'key', 'lock', 'unlock', 'bookmark', 'tag', 'pin', 'help', 'smile', 'plain', 'sad', 'performance')),
+    ('coral', ('edit', 'cut', 'copy', 'paste', 'undo', 'redo', 'clear', 'trash', 'paint', 'image', 'camera', 'bold', 'italic', 'underline', 'strikethrough', 'attachment', 'print', 'printer', 'scanner')),
+]
+
+
+def hue(kind):
+    for name, prefixes in SEMANTIC:
+        if any(kind == p or kind.startswith(p + '-') or kind.startswith(p) for p in prefixes):
+            return name
+    return HUES[sum(map(ord, kind)) % len(HUES)]
 
 def S(d, width=2.0): return ('s', d, width)
 def F(d): return ('f', d)
@@ -451,15 +486,28 @@ SYMBOLS = {
  'face-worried': ('sad', 'face-angry face-sick face-tired', 'status'),
 }
 
-def glyph_path(kind):
+def glyph_path(kind, weight=1.0):
     parts = []
     for item in BASE[kind]:
-        if item[0] == 's': parts.append(stroke(item[1], item[2]))
+        if item[0] == 's': parts.append(stroke(item[1], item[2] * weight))
         elif item[0] == 'f': parts.append(fill(item[1]))
         else: parts.append(_fmt(_disc((item[1], item[2]), item[3], 24)))
     return ''.join(parts)
 
 def svg(kind, variant, title):
-    color = COLORS[variant]
+    """Symbolic SVG: one filled path with a two-tone gradient."""
+    top, bottom = PALETTES[variant][hue(kind)]
+    weight = 1.3 if variant == 'Comfort' else 1.0
     return (f'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">'
-            f'<title>{escape(title)}</title><path d="{glyph_path(kind)}" fill="{color}"/></svg>\n')
+            f'<title>{escape(title)}</title><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">'
+            f'<stop offset="0" stop-color="{top}"/><stop offset="1" stop-color="{bottom}"/></linearGradient></defs>'
+            f'<path d="{glyph_path(kind, weight)}" fill="url(#g)"/></svg>\n')
+
+
+def clay_source(kind):
+    """Bold coloured glyph used to sculpt the clay panel icons."""
+    top, bottom = CLAY[hue(kind)]
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="-1 -1 26 26">'
+            f'<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="{top}"/>'
+            f'<stop offset="1" stop-color="{bottom}"/></linearGradient></defs>'
+            f'<path d="{glyph_path(kind, 1.45)}" fill="url(#g)"/></svg>\n')

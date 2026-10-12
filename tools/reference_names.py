@@ -107,3 +107,69 @@ gnome-disks gparted timeshift transmission-gtk qbittorrent gimp inkscape krita a
 shotwell evince okular calibre keepassxc gufw htop gcompris-qt kalzium marble stellarium geogebra
 scratch tuxmath klavaro anki goldendict code geany thonny virtualbox remmina steam
 '''.split()
+
+# LXQt applications and configuration modules (Icon= names of the Debian packages).
+LXQT = '''
+utilities-terminal system-file-manager user-desktop system-users system-suspend-hibernate system-suspend
+system-reboot system-log-out system-lock-screen system-shutdown screengrab qps preferences-system-time
+preferences-system-session-services preferences-system-power-management preferences-system
+preferences-desktop-theme preferences-desktop-peripherals preferences-desktop-notification
+preferences-desktop-locale preferences-desktop-keyboard preferences-desktop-filetype-association
+preferences-desktop-display obconf-qt lxqt-archiver lxqt-about lximage-qt featherpad brightnesssettings
+pcmanfm-qt qterminal lxqt-config lxqt-runner lxqt-sudo pavucontrol-qt nm-connection-editor
+'''.split()
+
+# KDE applications (apps.kde.org), application IDs.
+KDE = '''
+org.kde.dolphin org.kde.konsole org.kde.kate org.kde.kwrite org.kde.okular org.kde.gwenview org.kde.ark
+org.kde.spectacle org.kde.discover org.kde.elisa org.kde.kcalc org.kde.kdenlive org.kde.krita org.kde.kolourpaint
+org.kde.digikam org.kde.kmail2 org.kde.kontact org.kde.korganizer org.kde.kaddressbook org.kde.akregator
+org.kde.konversation org.kde.neochat org.kde.kdeconnect.app org.kde.ktorrent org.kde.kget org.kde.falkon
+org.kde.konqueror org.kde.kalzium org.kde.kstars org.kde.marble org.kde.kgeography org.kde.kbruch
+org.kde.kig org.kde.kmplot org.kde.kturtle org.kde.ktouch org.kde.kwordquiz org.kde.parley org.kde.khangman
+org.kde.kanagram org.kde.klettres org.kde.blinken org.kde.cantor org.kde.labplot2 org.kde.step
+org.kde.artikulate org.kde.minuet org.kde.gcompris org.kde.kiten org.kde.rocs org.kde.kalgebra
+org.kde.kpat org.kde.kmines org.kde.ksudoku org.kde.kblocks org.kde.bovo org.kde.knights org.kde.kmahjongg
+org.kde.ktuberling org.kde.palapeli org.kde.kbounce org.kde.kgoldrunner org.kde.knetwalk org.kde.kubrick
+org.kde.katomic org.kde.kollision org.kde.ksnakeduel org.kde.picmi org.kde.granatier org.kde.kapman
+org.kde.filelight org.kde.partitionmanager org.kde.kfind org.kde.kcharselect org.kde.kruler org.kde.kmag
+org.kde.kmousetool org.kde.kmouth org.kde.kdenlive org.kde.kamoso org.kde.haruna org.kde.dragonplayer
+org.kde.kaffeine org.kde.juk org.kde.k3b org.kde.skanlite org.kde.skanpage org.kde.kolf org.kde.kgpg
+org.kde.kleopatra org.kde.kwalletmanager5 org.kde.kinfocenter org.kde.ksystemlog org.kde.plasma-systemmonitor
+org.kde.kdevelop org.kde.umbrello org.kde.kompare org.kde.lokalize org.kde.okteta org.kde.kile
+org.kde.calligrawords org.kde.calligrasheets org.kde.calligrastage org.kde.karbon org.kde.krdc org.kde.krfb
+org.kde.kteatime org.kde.kweather org.kde.kclock org.kde.ktimer org.kde.kalarm org.kde.kmplayer
+systemsettings kdenlive krita kalzium marble kstars gcompris-qt
+'''.split()
+
+# GNOME applications (apps.gnome.org), application IDs.
+GNOME = '''
+org.gnome.Nautilus org.gnome.Terminal org.gnome.Console org.gnome.TextEditor org.gnome.gedit
+org.gnome.Calculator org.gnome.Calendar org.gnome.Contacts org.gnome.clocks org.gnome.Weather org.gnome.Maps
+org.gnome.Music org.gnome.Totem org.gnome.Showtime org.gnome.Loupe org.gnome.eog org.gnome.Evince
+org.gnome.Papers org.gnome.Snapshot org.gnome.Cheese org.gnome.SimpleScan org.gnome.DiskUtility
+org.gnome.baobab org.gnome.SystemMonitor org.gnome.Logs org.gnome.Characters org.gnome.font-viewer
+org.gnome.FileRoller org.gnome.Software org.gnome.Settings org.gnome.tweaks org.gnome.Extensions
+org.gnome.Epiphany org.gnome.Geary org.gnome.Evolution org.gnome.Polari org.gnome.Fractal org.gnome.Boxes
+org.gnome.Connections org.gnome.Todo org.gnome.Notes org.gnome.World.Secrets org.gnome.seahorse.Application
+org.gnome.Rhythmbox3 org.gnome.Lollypop org.gnome.Podcasts org.gnome.Shotwell org.gnome.gitg
+org.gnome.Builder org.gnome.Meld org.gnome.GHex org.gnome.Dictionary org.gnome.Yelp org.gnome.Tour
+org.gnome.Chess org.gnome.Mines org.gnome.Sudoku org.gnome.Mahjongg org.gnome.TwentyFortyEight
+org.gnome.Quadrapassel org.gnome.Robots org.gnome.Tetravex org.gnome.Reversi org.gnome.Nibbles
+org.gnome.Aisleriot org.gnome.Fragments org.gnome.Shortwave org.gnome.Solanum org.gnome.design.Palette
+org.gnome.Decibels org.gnome.Calls org.gnome.Photos org.gnome.Documents
+'''.split()
+
+# Popular applications on Linux (browsers, chat, media, office, education, games).
+POPULAR = '''
+google-chrome brave-browser firefox chromium microsoft-edge vivaldi opera librewolf tor-browser
+google-earth google-earth-pro whatsapp whatsapp-desktop telegram telegram-desktop signal-desktop discord
+element-desktop slack skype zoom teams-for-linux thunderbird gimp inkscape krita blender darktable
+rawtherapee scribus audacity ardour lmms musescore vlc mpv obs kdenlive openshot shotcut handbrake
+libreoffice-startcenter libreoffice-writer libreoffice-calc libreoffice-impress libreoffice-draw
+libreoffice-math libreoffice-base onlyoffice-desktopeditors wps-office calibre foliate anki goldendict
+geogebra stellarium celestia scratch-desktop gcompris tuxmath tuxpaint tuxtype klavaro kalzium marble
+code codium geany thonny arduino android-studio steam lutris retroarch minetest supertuxkart 0ad
+virtualbox gnome-boxes remmina anydesk teamviewer rustdesk transmission qbittorrent keepassxc bitwarden
+gparted timeshift synaptic gdebi bleachbit stacer htop hardinfo cpu-x spotify duolingo kiwix-desktop
+'''.split()

@@ -157,6 +157,9 @@ def glyph(kind,small=False):
     if kind=='notes':return rect(26,24,76,80,10,'honey')+rect(26,24,76,16,8,'coral')+line('M38 56H90M38 70H90M38 84H74','#fff6e2',4)
     if kind=='smartphone':return rect(38,16,52,96,14,'ink')+rect(43,24,42,74,8,'sky')+circle(64,104,3.5,'metal')+path('M48 90L60 72L68 82L74 76L80 90Z','mint')
     if kind=='laptop-remote':return rect(28,27,72,56,8,'metal')+rect(33,32,62,45,4,'ink')+rect(37,36,54,37,3,'sky')+path('M28 82H100L112 99Q111 104 103 104H25Q17 104 16 99Z','ivory')+line('M52 55H76M68 47L76 55L68 63','#fff3dd',4)
+    if kind=='logout':return rect(30,22,44,84,8,'ivory')+rect(36,28,32,72,5,'honey')+circle(60,66,3.5,'gold')+path('M66 52H86V42L106 64L86 86V76H66Z','coral')
+    if kind=='hibernate':return circle(64,64,40,'sky')+path('M74 34A28 28 0 1 0 94 72A22 22 0 0 1 74 34Z','paper')+line('M40 40H50L40 50H50M30 58H37L30 65H37','#fff3dd',3)
+    if kind=='clock-settings':return glyph('clock')+'<g transform="translate(66 66) scale(.42)">'+gear()+'</g>'
     raise KeyError(kind)
 
 def folder_kind(name):
@@ -238,7 +241,8 @@ CATALOG = {
  'text-x-script': ('code','sky','mimetypes','text-x-python text-x-shellscript text-x-csrc'),
  'system-search': ('search','sky','apps','search org.gnome.SearchTool'),
  'system-lock-screen': ('lock','cream','apps','preferences-system-privacy'),
- 'system-shutdown': ('power','coral','apps','system-log-out'),
+ 'system-shutdown': ('power','coral','apps',''),
+ 'system-log-out': ('logout','coral','apps','lxqt-logout gnome-logout application-exit xfsm-logout'),
  'dialog-warning': ('warning','cream','status','dialog-important emblem-important'),
  'dialog-information': ('info','sky','status','help-about help-info eduka-about lxqt-about gtk-about'),
  'emblem-favorite': ('heart','cream','emblems','emblem-favorites'),
@@ -301,7 +305,7 @@ EXTENSIONS = {
  'applications-science': 'kalzium org.kde.kalzium avogadro chemtool step org.kde.step gnuplot octave org.octave.Octave scilab rstudio jupyter jupyterlab spyder',
  'applications-games': 'gnome-mines org.gnome.Mines gnome-mahjongg aisleriot sol gnome-chess org.gnome.Chess kpat kmines ksudoku supertux supertuxkart 0ad minetest net.minetest.Minetest steam com.valvesoftware.Steam lutris retroarch input-gaming',
  'applications-development': 'geany org.geany.Geany vscode com.visualstudio.code code codium com.vscodium.codium sublime-text thonny org.thonny.Thonny bluefish idle idle3 qtcreator org.qt-project.qtcreator kdevelop org.kde.kdevelop codeblocks lazarus arduino arduino-ide cc.arduino.IDE2 eclipse netbeans pycharm-community android-studio gitg org.gnome.gitg git-cola meld org.gnome.Meld ghex org.gnome.GHex okteta applications-engineering',
- 'computer': 'user-desktop hardinfo hardinfo2 cpu-x kinfocenter org.kde.kinfocenter preferences-desktop-display lxqt-config-monitor arandr display-settings xfce-display-settings preferences-desktop-screensaver',
+ 'computer': 'hardinfo hardinfo2 cpu-x kinfocenter org.kde.kinfocenter preferences-desktop-display lxqt-config-monitor arandr display-settings xfce-display-settings preferences-desktop-screensaver',
  'computer-laptop': 'virtualbox VirtualBox virt-manager gnome-boxes org.gnome.Boxes qemu remmina org.remmina.Remmina krdc org.kde.krdc rustdesk anydesk teamviewer x2goclient vmplayer',
  'drive-harddisk': 'org.gnome.DiskUtility gnome-disks gparted partitionmanager org.kde.partitionmanager baobab org.gnome.baobab filelight qdirstat deja-dup org.gnome.DejaDup timeshift backintime drive-multidisk',
  'printer': 'system-config-printer printer-settings print-manager cups simple-scan org.gnome.SimpleScan skanlite xsane scanner',
@@ -311,7 +315,7 @@ EXTENSIONS = {
  'network-wireless': 'nm-applet network-manager',
  'network-workgroup': 'preferences-system-network nm-connection-editor preferences-system-network-proxy lxqt-config-network org.gnome.Settings-network',
  'bluetooth': 'preferences-system-bluetooth blueman blueman-manager blueman-adapters blueman-sendto blueman-services bluedevil gnome-bluetooth',
- 'org.gnome.clocks': 'preferences-system-time preferences-system-date-time lxqt-admin-time time-admin',
+ 'org.gnome.clocks': 'time-admin',
  'camera-photo': 'applets-screenshooter accessories-screenshot screengrab flameshot org.flameshot.Flameshot gnome-screenshot org.gnome.Screenshot spectacle org.kde.spectacle xfce4-screenshooter',
  'preferences-desktop-accessibility': 'orca accessibility preferences-desktop-accessibility-zoom',
  'applications-multimedia': 'applications-music',
@@ -338,7 +342,9 @@ NEW_ENTRIES = {
  'emblem-default': ('check','mint','emblems','emblem-ok emblem-checked task-complete'),
  'emblem-readonly': ('lock','cream','emblems','emblem-locked'),
  'system-reboot': ('update','sky','apps','system-restart lxqt-reboot gnome-session-reboot'),
- 'system-suspend': ('moon','honey','apps','system-hibernate lxqt-suspend lxqt-hibernate system-suspend-hibernate'),
+ 'system-suspend': ('moon','honey','apps','lxqt-suspend'),
+ 'system-hibernate': ('hibernate','sky','apps','lxqt-hibernate system-suspend-hibernate'),
+ 'preferences-system-time': ('clock-settings','teal','apps','preferences-system-date-time lxqt-admin-time'),
  'system-run': ('rocket','lavender','apps','gnome-run lxqt-runner krunner org.kde.krunner xfce4-appfinder'),
  'system-users': ('users','coral','apps','users lxqt-admin-user user-admin gnome-user-accounts preferences-system-users org.gnome.Settings-users system-switch-user'),
  'preferences-desktop-locale': ('globe','sky','apps','lxqt-config-locale config-language locale org.gnome.Settings-region applications-geography kgeography org.kde.kgeography marble org.kde.marble stellarium celestia org.gnome.Maps gnome-maps applications-astronomy eduka-language-pack-tet'),
@@ -362,7 +368,7 @@ NEW_ENTRIES = {
  'x-office-address-book': ('users','coral','apps','org.gnome.Contacts gnome-contacts kaddressbook contacts text-x-vcard'),
  'graphics-editor': ('paint','honey','apps','gimp org.gimp.GIMP inkscape org.inkscape.Inkscape krita org.kde.krita mypaint org.mypaint.MyPaint pinta com.github.PintaProject.Pinta kolourpaint org.kde.kolourpaint drawing com.github.maoschanz.drawing tuxpaint darktable rawtherapee blender scribus applications-painting'),
  'multimedia-video-editor': ('video','coral','apps','kdenlive org.kde.kdenlive openshot org.openshot.OpenShot shotcut org.shotcut.Shotcut pitivi flowblade obs com.obsproject.Studio simplescreenrecorder vokoscreenNG kazam peek handbrake fr.handbrake.ghb'),
- 'folder-desktop': ('folder-desktop','cream','places','user-desktop-folder'),
+ 'folder-desktop': ('folder-desktop','cream','places','user-desktop user-desktop-folder'),
  'folder-git': ('folder-git','cream','places','folder-development folder-code'),
  'folder-remote': ('folder-cloud','cream','places','folder-cloud folder-network network-server-folder folder-remote-ftp'),
  'folder-locked': ('folder-lock','cream','places','folder-lock folder-private'),

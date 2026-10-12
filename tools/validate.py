@@ -9,8 +9,10 @@ import shutil
 import subprocess
 import xml.etree.ElementTree as ET
 from PIL import Image
-from artwork import CATALOG, duplicates
-from build_theme import ROOT, VERSION, VARIANTS, PHYSICAL, DENSITIES, CONTEXTS
+from artwork import duplicates
+from catalog import plan
+from build_theme import ROOT, VERSION, VARIANTS, PHYSICAL, DENSITIES
+from build_apps import SIZES as APP_SIZES, THEMES as APP_THEMES
 from symbolic import SYMBOLS
 from check_lookup import check as check_lookup
 
@@ -25,8 +27,10 @@ def validate_theme(variant):
     registered = cfg.get('Icon Theme', 'Directories').split(',') + cfg.get('Icon Theme', 'ScaledDirectories').split(',')
     for directory in registered:
         if directory not in cfg or not (theme / directory).is_dir(): errors.append(f'unregistered: {directory}')
+    core, _ = plan()
+    contexts = sorted({v[2] for v in core.values()})
     for logical in DENSITIES:
-        for context in CONTEXTS:
+        for context in contexts:
             section = f'{logical}x{logical}@2x/{context}'
             assert cfg.getint(section, 'Scale') == 2, section
     links = real_files = 0
@@ -47,7 +51,7 @@ def validate_theme(variant):
                 if path.suffix == '.png':
                     with Image.open(path) as image: image.verify()
     for size in PHYSICAL:
-        for name, (_, _, context, aliases) in CATALOG.items():
+        for name, (_, _, context, aliases) in core.items():
             path = theme / f'{size}x{size}' / context / (name + '.png')
             with Image.open(path) as image:
                 assert image.size == (size, size), path
@@ -63,11 +67,31 @@ def validate_theme(variant):
     cache = shutil.which('gtk-update-icon-cache')
     if cache: subprocess.run([cache, '-q', '-f', '-t', str(theme)], check=True)
     return {'variant': variant, 'regular_files': real_files, 'relative_links': links,
-            'catalog_entries': len(CATALOG), 'symbolic_entries': len(SYMBOLS), 'errors': errors}
+            'catalog_entries': len(core), 'symbolic_entries': len(SYMBOLS), 'errors': errors}
+
+def validate_apps(name):
+    """Every planned application name exists at every size and is a real PNG."""
+    theme = ROOT / 'build/themes' / name
+    _, apps = plan()
+    errors = []
+    names = set(apps['links']) | set(apps['badges']) | set(apps['art'])
+    for size in APP_SIZES:
+        folder = theme / f'{size}x{size}/apps'
+        present = {p.stem for p in folder.iterdir() if p.exists()}
+        missing = names - present
+        if len(missing) > 50: errors.append(f'{size}px: {len(missing)} names missing')
+    cfg = configparser.ConfigParser(interpolation=None)
+    cfg.read(theme / 'index.theme')
+    assert cfg.get('Icon Theme', 'Hidden') == 'true'
+    for path in sorted((theme / '128x128/apps').iterdir())[:400]:
+        with Image.open(path) as image:
+            assert image.size == (128, 128), path
+    return {'variant': name, 'names': len(names), 'errors': errors}
 
 def validate():
     assert not duplicates(), duplicates()
     reports = [validate_theme(variant) for variant in VARIANTS]
+    reports += [validate_apps(name) for name in APP_THEMES.values()]
     metadata = json.loads((ROOT / 'assets/generated.json').read_text())
     for record in metadata['assets']:
         assert hashlib.sha256((ROOT / 'assets' / record['file']).read_bytes()).hexdigest() == record['sha256']
