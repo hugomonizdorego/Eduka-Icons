@@ -1,0 +1,146 @@
+{
+  "version": "0.3.0",
+  "tool": "built-in imagegen",
+  "reference_sha256": "7ed0949126953e94785fe08c8ed3ef7cf57df19a9ff9164c5cc2f1fee9a2995f",
+  "generated_assets": [
+    "folder",
+    "home",
+    "browser",
+    "camera",
+    "education",
+    "files",
+    "settings",
+    "terminal",
+    "document",
+    "music",
+    "mail",
+    "chat",
+    "store",
+    "shield",
+    "bulb",
+    "calendar",
+    "trash"
+  ],
+  "assets": [
+    {
+      "name": "folder",
+      "file": "masters/folder.webp",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "f8f4a701c82b8a15ea9b9ea9cdd759ef2ee2924fc47c12b07de28bcf744e77b7"
+    },
+    {
+      "name": "home",
+      "file": "masters/home.webp",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "3eadac111c4e4149a633b2146a473efad1192e458d55581b6c875838677775ec"
+    },
+    {
+      "name": "browser",
+      "file": "masters/browser.webp",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "f98029d2de9476202556a61d205bd687a71ec891cbc2053864efcc80fe8bcc77"
+    },
+    {
+      "name": "camera",
+      "file": "masters/camera.webp",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "8ebccb36db27a8ac0c8c96722b2dfe1dae183854571d442a6e30f0c3eb09364a"
+    },
+    {
+      "name": "education",
+      "file": "masters/education.webp",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "190f09769955f7acd6fcde1bb6e8c77b2ffedcc70a46c6b3cab2a5db8bf33894"
+    },
+    {
+      "name": "files",
+      "file": "masters/files.webp",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "6ef240befba28b7e5de9f92813c053db954bb23934e15a2e1e86f84552e4fffe"
+    },
+    {
+      "name": "settings",
+      "file": "masters/settings.webp",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "ceb63f3ab6e91e0c264b86672777ad9d36bc132d6701756422f1406db992fcb0"
+    },
+    {
+      "name": "terminal",
+      "file": "masters/terminal.webp",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "29498f3063f04b4085577754200211ef1b45ed021de2080f7eec1d818201cdbd"
+    },
+    {
+      "name": "document",
+      "file": "masters/document.webp",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "f40980e957b75d669e20f50748c81e902a5f208e4c274ae7fe6dd137ee324adf"
+    },
+    {
+      "name": "music",
+      "file": "masters/music.webp",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "fde8e151f0d57f47d4cfa22919cf53c2388360b3343f75ea378fe6ec8a7f8993"
+    },
+    {
+      "name": "mail",
+      "file": "masters/mail.webp",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "92a428b79fa927467491491ecc4c4f05c93d5e7874024e0ca29322109a4f5c65"
+    },
+    {
+      "name": "chat",
+      "file": "masters/chat.webp",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "b8f0c7bc2e18005e47ef6344ce57a6f1a49c20c870f49afc6257c85af648b43b"
+    },
+    {
+      "name": "store",
+      "file": "masters/store.webp",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "dae7cdf2237381d7f3bc232a82fc744af622320e22d870bd3a19a1a23ebdfa3b"
+    },
+    {
+      "name": "shield",
+      "file": "masters/shield.webp",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "d3c5c52222d676a7bb37f87ba0a8ea16486feb5726b95ae00773ed8ebe7bafa2"
+    },
+    {
+      "name": "bulb",
+      "file": "masters/bulb.webp",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "b7d1c165f86bc10a58746a38e8568671f064195c3726d05836f890b6b6860b77"
+    },
+    {
+      "name": "calendar",
+      "file": "masters/calendar.webp",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "f35497cee24dcb14d98b5573c9ae82245033b299b98cf81eac0541faf68e427a"
+    },
+    {
+      "name": "trash",
+      "file": "masters/trash.webp",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "8dbf3b62bea0e94595ae012c4760ada79cf6264f32bbec8f09841dd30fc7ce8c"
+    }
+  ],
+  "encoding": "Lossless WebP; RGBA pixels verified against 0.3.0 PNG masters."
+}
