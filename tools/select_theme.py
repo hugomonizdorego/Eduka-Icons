@@ -547,7 +547,7 @@ def folder_colours():
     colours = set()
     for root in ICON_ROOTS:
         assets = root / theme_name('Light') / 'assets'
-        for path in (sorted(assets.glob('*/folder@*.png')) if assets.is_dir() else ()):
+        for path in (sorted(assets.glob('48/folder*@*.png')) if assets.is_dir() else ()):
             colours.add(path.stem.split('@', 1)[1])
     return sorted(colours)
 

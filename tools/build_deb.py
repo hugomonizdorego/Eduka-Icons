@@ -111,6 +111,8 @@ exit 0
 
 PRERM = '''#!/bin/sh
 set -e
+# Byte-code written when the tools ran as root.
+rm -rf /usr/lib/eduka-icons/__pycache__
 case "$1" in
   remove)
     python3 /usr/lib/eduka-icons/select_theme.py --reset-system-defaults --quiet || true
@@ -135,6 +137,9 @@ case "$1" in
       rm -f "/usr/share/icons/$theme/icon-theme.cache"
       rmdir "/usr/share/icons/$theme" 2>/dev/null || true
     done
+    # Byte-code written when the tools ran as root.
+    rm -rf /usr/lib/eduka-icons/__pycache__
+    rmdir /usr/lib/eduka-icons 2>/dev/null || true
     if [ "$1" = purge ]; then rm -rf /var/lib/eduka-icons; fi
     if [ -d /run/systemd/system ]; then systemctl daemon-reload >/dev/null 2>&1 || true; fi
     ;;

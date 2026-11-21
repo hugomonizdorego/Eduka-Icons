@@ -349,7 +349,12 @@ def run(user=False, only_if_changed=False, quiet=False, rebuild=False):
             for directory in (target_root / theme).glob('*/apps'):
                 (directory / f'{name}.png').unlink(missing_ok=True)
         generated.pop(name, None)
-    if generated or mark.exists():
+    if not generated:                 # nothing left: leave no empty directories behind
+        for theme in THEMES.values():
+            for directory in (target_root / theme).glob('*/apps'):
+                try: directory.rmdir(); directory.parent.rmdir()
+                except OSError: pass
+    if generated:
         for theme in THEMES.values():
             _safe_dir(target_root / theme)
             stale = target_root / theme / 'icon-theme.cache'    # a cache without index.theme would hide new icons
@@ -364,6 +369,7 @@ def run(user=False, only_if_changed=False, quiet=False, rebuild=False):
             os.replace(temporary, record)
     else:
         for theme in THEMES.values():
+            (target_root / theme / MARK).unlink(missing_ok=True)
             try: (target_root / theme).rmdir()
             except OSError: pass
     if not quiet:
