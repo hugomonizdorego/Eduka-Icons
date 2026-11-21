@@ -291,6 +291,8 @@ def build(output, variants=VARIANTS):
                 (theme / directory).mkdir(parents=True)
                 directories[directory] = (logical, 2, context, 'Scalable', *size_range(logical, DENSITIES))
                 for source in (theme / f'{logical * 2}x{logical * 2}' / context).iterdir():
+                    if logical <= SMALL_MAX and source.stem in small:
+                        continue           # flat glyph at tray sizes on HiDPI screens too
                     alias(theme / directory / source.name, source)
         for size in PHYSICAL:
             if size not in SIZES:          # only reachable through its @2x directory
