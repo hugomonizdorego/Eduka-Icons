@@ -14,8 +14,8 @@ ROOT = Path(__file__).resolve().parents[1]
 BUILD = Path(os.environ.get('EDUKA_ICONS_BUILD', ROOT / 'build')).resolve()
 DEFAULTS = {
     'build': {'variants': ['Light', 'Dark', 'Bright', 'Comfort'],
-              'sizes': [16, 22, 24, 32, 48, 64, 96, 128, 256, 512],
-              'hidpi': [16, 22, 24, 32, 48, 64, 128, 256],
+              'sizes': [16, 22, 24, 32, 48, 64, 96, 128, 256],
+              'hidpi': [16, 22, 24, 32, 48, 64, 128],
               'app_sizes': [16, 22, 24, 32, 48, 64, 128], 'app_hidpi': [16, 24, 32, 64],
               'sharpen_up_to': 48, 'sharpen_percent': 100},
     'glyphs': {'style': 'mono', 'weight': 1.0, 'comfort_weight': 1.3,

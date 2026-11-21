@@ -410,8 +410,9 @@ def save_png(image, path, quality='fine'):
 
     quality 'lossless': exact pixels. 'fine': 6 bits per colour channel (error <= 3).
     'small': 5 bits (error <= 7), or a 256-colour palette when that file is
-    smaller and passes a safety check (opaque stays opaque, clear stays clear,
-    colour error <= 24).
+    smaller and passes a safety check: opaque stays opaque, clear stays clear,
+    and on visible pixels the colour error is small (mean <= 7 of 255,
+    99 % of the pixels <= 28).
     """
     image = image.convert('RGBA')
     if quality == 'lossless':
@@ -425,8 +426,14 @@ def save_png(image, path, quality='fine'):
         alpha, new_alpha = image.getchannel('A'), back.getchannel('A')
         opaque_kept = ImageChops.subtract(alpha.point(lambda v: 255 if v == 255 else 0), new_alpha).getextrema()[1] <= 8
         clear_kept = ImageChops.multiply(alpha.point(lambda v: 255 if v == 0 else 0), new_alpha).getextrema()[1] == 0
-        error = max(band.getextrema()[1] for band in ImageChops.difference(image.convert('RGB'), back.convert('RGB')).split())
-        if opaque_kept and clear_kept and error <= 24:
+        alpha_kept = ImageChops.difference(alpha, new_alpha).getextrema()[1] <= 56
+        bands = ImageChops.difference(image.convert('RGB'), back.convert('RGB')).split()
+        worst = ImageChops.lighter(ImageChops.lighter(bands[0], bands[1]), bands[2])
+        histogram = worst.histogram(alpha.point(lambda v: 255 if v > 48 else 0))
+        visible = sum(histogram) or 1
+        mean = sum(i * n for i, n in enumerate(histogram)) / visible
+        tail = sum(histogram[29:]) / visible
+        if opaque_kept and clear_kept and alpha_kept and mean <= 7 and tail <= 0.01:
             data = _png(palette)
             if len(data) < len(best):
                 best = data

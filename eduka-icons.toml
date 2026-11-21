@@ -4,9 +4,10 @@
 [build]
 variants = ["Light", "Dark", "Bright", "Comfort"]
 # Icon sizes of the Eduka-drawn artwork (freedesktop/hicolor standard sizes).
-sizes = [16, 22, 24, 32, 48, 64, 96, 128, 256, 512]
+# Add 512 (and 256 to "hidpi") for very large launchers; it adds about 60 MB to the package.
+sizes = [16, 22, 24, 32, 48, 64, 96, 128, 256]
 # Logical sizes that also get a HiDPI "@2x" directory (uses the 2x pixel size).
-hidpi = [16, 22, 24, 32, 48, 64, 128, 256]
+hidpi = [16, 22, 24, 32, 48, 64, 128]
 # Sizes of the application / file-type catalog (thousands of icons: keep this short).
 app_sizes = [16, 22, 24, 32, 48, 64, 128]
 app_hidpi = [16, 24, 32, 64]

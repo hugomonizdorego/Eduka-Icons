@@ -42,7 +42,7 @@
 
 ### Sizes and configuration
 
-- Standard freedesktop sizes 16, 22, 24, 32, 48, 64, 96, 128, 256 and 512
+- Standard freedesktop sizes 16, 22, 24, 32, 48, 64, 96, 128 and 256
   with HiDPI (@2x) directories; in-between sizes (18, 20, 36, 40, 72 ...) are
   scaled down from the next larger artwork instead of scaled up.
 - `eduka-icons.toml`: variants, sizes, HiDPI sizes, glyph style, weight and

@@ -179,7 +179,7 @@ def _export_asset(job):
                 if size <= 32: small = rim(small)   # cream objects keep an edge on light backgrounds
             target = pixels / str(size) / (asset + '.png')
             if target.exists(): target.unlink()   # never write through a hard link
-            save_png(small, target, 'lossless' if size < 128 else 'fine')
+            save_png(small, target, 'lossless' if size <= 48 else 'small')
     return limit
 
 

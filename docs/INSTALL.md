@@ -171,7 +171,7 @@ that lets you pick a folder icon: `folder-rose`, `folder-blue-documents` ...
 ## 7. Sizes and customising the build
 
 The themes ship the freedesktop standard sizes 16, 22, 24, 32, 48, 64, 96,
-128, 256 and 512 px plus HiDPI (@2x) directories. Panels and menus may ask
+128 and 256 px plus HiDPI (@2x) directories. Panels and menus may ask
 for any size: sizes in between are scaled down from the next larger artwork.
 Up to 24 px the tray, panel and toolbar names are flat one-colour glyphs;
 from 32 px they are clay.

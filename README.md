@@ -63,7 +63,7 @@ eduka-icons-select --folder-colour olive     # aqua, olive, orange, yellow, rose
 
 ## Sizes
 
-Standard freedesktop sizes 16, 22, 24, 32, 48, 64, 96, 128, 256 and 512 px
+Standard freedesktop sizes 16, 22, 24, 32, 48, 64, 96, 128 and 256 px
 with HiDPI (@2x) directories; any size in between is scaled down from the
 next larger artwork. Sizes, glyph style and colours, folder colours and the
 Bright/Comfort tuning are set in [`eduka-icons.toml`](eduka-icons.toml).

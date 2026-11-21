@@ -7,6 +7,10 @@ import ctypes as C
 import ctypes.util
 from pathlib import Path
 
+import settings
+
+HIDPI = tuple(settings.load()['build']['hidpi'])
+
 NAMES = ('folder', 'user-home', 'system-file-manager', 'internet-web-browser', 'eduka-konekta', 'libreoffice-writer',
          'preferences-desktop-locale', 'utilities-system-monitor', 'help-about', 'face-smile')
 # Tray-type names: flat glyph up to 24 px (also on HiDPI), clay artwork from 32 px.
@@ -89,7 +93,7 @@ def check(base, variants=('Light', 'Dark', 'Bright', 'Comfort')):
                     try:
                         filename = gtk.gtk_icon_info_get_filename(info).decode()
                         assert Path(filename).resolve().is_relative_to(root / f'Eduka-Icons-{variant}'), filename
-                        if scale == 2 and filename.endswith('.png') and size * 2 <= 512: assert '@2x' in filename, filename
+                        if scale == 2 and filename.endswith('.png') and size in HIDPI: assert '@2x' in filename, filename
                         pixbuf = gtk.gtk_icon_info_load_icon(info, None)
                         assert pixbuf, filename
                         try:
