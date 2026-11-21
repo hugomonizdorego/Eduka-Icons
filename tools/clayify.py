@@ -422,6 +422,10 @@ def save_png(image, path, quality='fine'):
     else:
         best = _png(_posterize(image, 5))
         palette = image.quantize(256, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE)
+        entries = palette.getpalette('RGBA')
+        if entries:                      # the quantiser averages alpha: keep solid colours solid
+            entries[3::4] = [255 if value >= 216 else value for value in entries[3::4]]
+            palette.putpalette(entries, 'RGBA')
         back = palette.convert('RGBA')
         alpha, new_alpha = image.getchannel('A'), back.getchannel('A')
         opaque_kept = ImageChops.subtract(alpha.point(lambda v: 255 if v == 255 else 0), new_alpha).getextrema()[1] <= 8
