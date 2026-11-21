@@ -23,6 +23,7 @@ import os
 from pathlib import Path
 import re
 import shutil
+import signal
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -121,7 +122,11 @@ def find_sources(name, user):
                 if candidate.stem != name or candidate.suffix not in ('.svg', '.png') or not candidate.is_file():
                     continue
                 match = re.match(r'^(\d+)x\d+', candidate.parent.parent.name)
-                size = 4096 if candidate.suffix == '.svg' else int(match.group(1)) if match else 1
+                pixels = int(match.group(1)) if match else 0
+                if candidate.suffix == '.svg':       # the scalable drawing first, then the largest size-specific one
+                    size = 8192 if not match else 4096 + pixels
+                else:
+                    size = pixels or 1
                 found.append((-size, len(found), candidate))
         for extension in ('svg', 'png'):
             pixmap = root / 'pixmaps' / f'{name}.{extension}'
@@ -190,6 +195,12 @@ def sculpt_safely(source, scratch):
     with Image.open(scratch) as image:
         image.load()
         return image.convert('RGBA')
+
+
+def stamp_of(source):
+    """Changes whenever the original changes, also behind a link with an unchanged mtime (Flatpak)."""
+    status = source.stat()
+    return f'{os.path.realpath(source)}:{status.st_mtime_ns}:{status.st_size}'
 
 
 def _safe_dir(path):
@@ -270,6 +281,24 @@ def _target_root(user):
     return SYSTEM_OVERLAY
 
 
+def _save_state(target_root, state):
+    for theme in THEMES.values():
+        _safe_dir(target_root / theme)
+        stale = target_root / theme / 'icon-theme.cache'    # a cache without index.theme would hide new icons
+        if stale.exists():
+            stale.unlink()
+        record = target_root / theme / MARK
+        temporary = record.with_name(record.name + '.tmp')
+        if temporary.is_symlink() or temporary.exists():
+            temporary.unlink()
+        temporary.write_text(json.dumps(state, indent=1) + '\n')
+        os.replace(temporary, record)
+
+
+def _terminated(*_):
+    raise SystemExit(143)
+
+
 def run(user=False, only_if_changed=False, quiet=False, rebuild=False):
     if not user and os.geteuid() != 0:
         raise SystemExit('Run as root for all users, or with --user for this account.')
@@ -290,6 +319,7 @@ def run(user=False, only_if_changed=False, quiet=False, rebuild=False):
     try:
         state = json.loads(mark.read_text())
         assert isinstance(state, dict) and isinstance(state.get('icons', {}), dict)
+        assert isinstance(state.get('failed', {}), dict)
     except (OSError, ValueError, AssertionError):
         state = {}
     current = signature(user)
@@ -300,24 +330,38 @@ def run(user=False, only_if_changed=False, quiet=False, rebuild=False):
     # A new clay style or another set of sizes regenerates everything.
     same_style = state.get('style') == STYLE and state.get('sizes') == sizes
     generated = dict(previous) if same_style and not rebuild else {}
-    wanted = {}
+    failed_before = state.get('failed', {}) if same_style and not rebuild else {}
+    failed, wanted = {}, {}
     _safe_dir(standard)
     scratch = standard / f'.sculpt-{os.getpid()}.png'
+
+    def snapshot(signature_value):
+        # Icons written so far stay known (and removable) when the run is interrupted.
+        return {'signature': signature_value, 'style': STYLE, 'sizes': sizes,
+                'icons': {**{n: v for n, v in previous.items() if n not in generated}, **generated},
+                'failed': failed}
+
+    handler = signal.signal(signal.SIGTERM, _terminated)     # e.g. "timeout" in the package script
+    made = 0
     try:
         for name in sorted(desktop_icons(user)):
             if name in covered:
                 continue
             for source in find_sources(name, user):
                 try:
-                    stamp = f'{source}:{source.stat().st_mtime_ns}'
+                    stamp = stamp_of(source)
                 except OSError:
                     continue
                 if generated.get(name) == stamp and (standard / f'{sizes[-1]}x{sizes[-1]}/apps/{name}.png').exists():
                     wanted[name] = stamp
                     break
+                if failed_before.get(str(source)) == stamp:
+                    failed[str(source)] = stamp       # still the same broken file: do not retry on every apt run
+                    continue
                 try:
                     master = sculpt_safely(source, scratch)
                 except Exception as error:
+                    failed[str(source)] = stamp
                     if not quiet:
                         print(f'Skipped {source}: {error}', file=sys.stderr)
                     continue                  # try the next original of this application
@@ -338,40 +382,33 @@ def run(user=False, only_if_changed=False, quiet=False, rebuild=False):
                             link.unlink()
                         link.symlink_to(f'../../{logical * 2}x{logical * 2}/apps/{name}.png')
                 wanted[name] = generated[name] = stamp
+                made += 1
+                if made % 10 == 0:
+                    _save_state(target_root, snapshot(''))     # no signature: the next run continues
                 if not quiet:
                     print(f'Clay icon for {name} (from {source})')
                 break
+    except BaseException:
+        if made:
+            _save_state(target_root, snapshot(''))
+        raise
     finally:
         scratch.unlink(missing_ok=True)
+        signal.signal(signal.SIGTERM, handler)
     # Applications that were removed, or that the packaged themes draw now.
     for name in (set(previous) | set(generated)) - set(wanted):
         for theme in THEMES.values():
             for directory in (target_root / theme).glob('*/apps'):
                 (directory / f'{name}.png').unlink(missing_ok=True)
         generated.pop(name, None)
-    if not generated:                 # nothing left: leave no empty directories behind
+    if not generated:                 # nothing left: leave no empty size directories behind
         for theme in THEMES.values():
             for directory in (target_root / theme).glob('*/apps'):
                 try: directory.rmdir(); directory.parent.rmdir()
                 except OSError: pass
-    if generated:
-        for theme in THEMES.values():
-            _safe_dir(target_root / theme)
-            stale = target_root / theme / 'icon-theme.cache'    # a cache without index.theme would hide new icons
-            if stale.exists():
-                stale.unlink()
-            record = target_root / theme / MARK
-            temporary = record.with_name(record.name + '.tmp')
-            if temporary.is_symlink() or temporary.exists():
-                temporary.unlink()
-            temporary.write_text(json.dumps({'signature': current, 'style': STYLE, 'sizes': sizes,
-                                             'icons': generated}, indent=1) + '\n')
-            os.replace(temporary, record)
-    else:
-        for theme in THEMES.values():
-            (target_root / theme / MARK).unlink(missing_ok=True)
-            try: (target_root / theme).rmdir()
-            except OSError: pass
+    previous = {}
+    # The state is kept even without icons, so "--if-changed" stays a cheap check.
+    _save_state(target_root, snapshot(current))
     if not quiet:
         print(f'{len(generated)} installed applications use generated clay icons in {target_root}.')
     return 0

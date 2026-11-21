@@ -5,8 +5,8 @@
 Eduka-Icons comes as three packages; install them together:
 
 ```sh
-sudo apt install ./eduka-icons_0.5.0_all.deb ./eduka-icons-apps_0.5.0_all.deb \
-                 ./eduka-icons-apps-comfort_0.5.0_all.deb
+sudo apt install ./eduka-icons_1.0.0_all.deb ./eduka-icons-apps_1.0.0_all.deb \
+                 ./eduka-icons-apps-comfort_1.0.0_all.deb
 ```
 
 | Package | Content |
@@ -50,14 +50,14 @@ Upgrades keep whatever default is in place. Removing the package
 
    ```sh
    apt update
-   apt install -y ./eduka-icons_0.5.0_all.deb ./eduka-icons-apps_0.5.0_all.deb \
-                  ./eduka-icons-apps-comfort_0.5.0_all.deb
+   apt install -y ./eduka-icons_1.0.0_all.deb ./eduka-icons-apps_1.0.0_all.deb \
+                  ./eduka-icons-apps-comfort_1.0.0_all.deb
    ```
 
    For another default variant:
 
    ```sh
-   EDUKA_ICONS_DEFAULT=Bright apt install -y ./eduka-icons*_0.5.0_all.deb
+   EDUKA_ICONS_DEFAULT=Bright apt install -y ./eduka-icons*_1.0.0_all.deb
    ```
 
 4. Check and clean up:
@@ -65,7 +65,7 @@ Upgrades keep whatever default is in place. Removing the package
    ```sh
    dpkg -s eduka-icons | grep -E 'Status|Version'
    grep icon_theme /etc/xdg/lxqt/lxqt.conf     # icon_theme=Eduka-Icons-Light
-   rm ./eduka-icons*_0.5.0_all.deb
+   rm ./eduka-icons*_1.0.0_all.deb
    ```
 
 Installation order with `edukasaun-desktop-menu` does not matter. To change
@@ -119,6 +119,9 @@ In Eduka-Desktop sessions the autostart entry runs
 It only switches between Eduka-Icons variants. If a user picks an icon theme
 by hand (Eduka-Settings, `--apply`, or a non-Eduka theme such as Papirus), the
 follower stops. Turn it back on with `eduka-icons-select --follow-desktop`.
+A system default other than Light (for example an ISO built with
+`EDUKA_ICONS_DEFAULT=Dark`) is kept as well, and nothing is changed while the
+Eduka-Desktop theme is unknown to this version.
 
 ## 4. Eye comfort and low vision
 

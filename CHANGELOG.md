@@ -71,6 +71,13 @@
   configured.
 - The Eduka-Desktop theme follower no longer switches itself off on its
   first run, survives a broken state file, and explains why it does nothing.
+  It keeps a variant picked by hand before its first run and a system default
+  other than Light, and changes nothing while the Eduka-Desktop theme is
+  unknown or its settings file is being rewritten.
+- Upgrades from 0.4/0.5 move the old side-by-side backups of the system
+  defaults into the record, so removing the package restores the original
+  defaults; `EDUKA_ICONS_NO_DEFAULT=1` is remembered across upgrades; a
+  disabled `eduka-icons-clayify.path` unit stays disabled.
 - `eduka-icons-clayify` converts each icon in a time- and memory-limited
   child process, tries the next original when one is broken, rejects blank
   results, regenerates after an upgrade, cleans up icons of removed

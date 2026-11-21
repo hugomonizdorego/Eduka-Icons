@@ -35,6 +35,11 @@ class Ini(unittest.TestCase):
         self.assertEqual(st.read_ini_value(self.path, 'Icons', 'Theme'), 'B')
         self.assertEqual(st.read_ini_value(self.path, 'Z', 'y'), '2')
 
+    def test_only_real_line_ends_split(self):
+        self.path.write_text('[General]\nNote=x\x0cy\u2028z\n[Icons]\nTheme=breeze\n')
+        st.set_ini_value(self.path, 'Icons', 'Theme', 'New', backup=False)
+        self.assertEqual(self.path.read_text(), '[General]\nNote=x\x0cy\u2028z\n[Icons]\nTheme=New\n')
+
     def test_no_temporary_file_left(self):
         st.set_ini_value(self.path, 'A', 'b', 'c', backup=False)
         self.assertEqual([p.name for p in Path(self.dir.name).iterdir()], ['a.conf'])
@@ -59,6 +64,28 @@ class SystemDefaults(unittest.TestCase):
             st.reset_system(True, root)
             left = {str(p.relative_to(root)): p.read_text() for p in root.rglob('*') if p.is_file()}
             self.assertEqual(left, files)
+
+
+    def test_reset_uses_backups_of_older_versions(self):
+        with tempfile.TemporaryDirectory() as name:
+            root = Path(name)
+            # State left by 0.5.0: our value in place, the original next to it.
+            files = {'etc/xdg/lxqt/lxqt.conf': '[General]\nicon_theme=Eduka-Icons-Light\n',
+                     'etc/xdg/lxqt/lxqt.conf.eduka-icons-backup': '[General]\nicon_theme=Papirus\n',
+                     'etc/skel/.gtkrc-2.0': 'gtk-icon-theme-name="Eduka-Icons-Light"\n',
+                     'etc/skel/.gtkrc-2.0.eduka-icons-backup': 'gtk-icon-theme-name="Adwaita"\n',
+                     'etc/xdg/kdeglobals': '[Icons]\nTheme=Eduka-Icons-Light\n',
+                     'var/lib/eduka-icons/defaults-initialized': 'Light\n'}
+            for relative, text in files.items():
+                (root / relative).parent.mkdir(parents=True, exist_ok=True)
+                (root / relative).write_text(text)
+            st.migrate_system(True, root)                 # what the package does on upgrade
+            self.assertFalse(list(root.rglob('*.eduka-icons-backup')))
+            st.apply_system('Dark', True, root)
+            st.reset_system(True, root)
+            self.assertEqual(st.read_ini_value(root / 'etc/xdg/lxqt/lxqt.conf', 'General', 'icon_theme'), 'Papirus')
+            self.assertEqual((root / 'etc/skel/.gtkrc-2.0').read_text(), 'gtk-icon-theme-name="Adwaita"\n')
+            self.assertFalse((root / 'etc/xdg/kdeglobals').exists())     # created by Eduka-Icons
 
 
 class Follow(unittest.TestCase):
@@ -95,6 +122,27 @@ class Follow(unittest.TestCase):
         self.assertEqual(st.follow_once(), 'manual')
         self.assertEqual(st.follow_once(), 'disabled')
         self.assertEqual(st.current_user_theme(), 'Eduka-Icons-Light')
+
+    def test_first_run_keeps_a_variant_picked_by_hand(self):
+        st.set_ini_value(self.home / '.config/lxqt/lxqt.conf', 'General', 'icon_theme', 'Eduka-Icons-Dark')
+        self.desktop('Eduka-Default-Theme')
+        self.assertEqual(st.follow_once(), 'manual')
+        self.assertEqual(st.current_user_theme(), 'Eduka-Icons-Dark')
+        self.assertEqual(st.follow_once(), 'disabled')
+
+    def test_unknown_or_half_written_desktop_theme_changes_nothing(self):
+        self.desktop('Edukasaun-Dark')
+        self.assertEqual(st.follow_once(), 'applied')
+        for content in ('{"wallpaper": "/x.png", "theme_st', '', '{"theme_style": "Some-Custom-Dark"}', '{}', '[1]'):
+            self.settings.write_text(content)
+            self.assertEqual(st.follow_once(), 'unknown-desktop-theme', content)
+            self.assertEqual(st.current_user_theme(), 'Eduka-Icons-Dark')
+
+    def test_empty_xdg_variables_count_as_unset(self):
+        os.environ['XDG_CONFIG_HOME'] = ''
+        os.environ['XDG_DATA_HOME'] = 'relative/path'
+        home, config, data = st.user_dirs()
+        self.assertEqual((config, data), (self.home / '.config', self.home / '.local/share'))
 
     def test_comfort_and_foreign_themes_are_never_switched(self):
         self.desktop('Edukasaun-Dark')

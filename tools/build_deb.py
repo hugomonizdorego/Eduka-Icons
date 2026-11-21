@@ -83,17 +83,26 @@ case "$1" in
     else
       python3 /usr/lib/eduka-icons/clayify_installed.py --quiet || true
     fi
-    # Backup files written next to the originals by 0.4/0.5 leaked into new home directories.
-    rm -f /etc/skel/.gtkrc-2.0.eduka-icons-backup
+    # Backup files written next to the originals by 0.4/0.5 leaked into new home directories:
+    # their values move to /var/lib/eduka-icons/backup.
+    python3 /usr/lib/eduka-icons/select_theme.py --migrate-system-defaults --quiet || true
     if command -v systemctl >/dev/null 2>&1; then
-      # "enable" also works in a chroot such as Cubic; start only on a running system.
-      systemctl enable eduka-icons-clayify.path >/dev/null 2>&1 || true
-      if [ -d /run/systemd/system ]; then
-        systemctl daemon-reload >/dev/null 2>&1 || true
-        systemctl restart eduka-icons-clayify.path >/dev/null 2>&1 || true
+      if [ -d /run/systemd/system ]; then systemctl daemon-reload >/dev/null 2>&1 || true; fi
+      if [ -z "$2" ] || dpkg --compare-versions "$2" lt 1.0.0; then
+        # First installation ("enable" also works in a chroot such as Cubic).
+        systemctl enable eduka-icons-clayify.path >/dev/null 2>&1 || true
+        if [ -d /run/systemd/system ]; then systemctl start eduka-icons-clayify.path >/dev/null 2>&1 || true; fi
+      elif [ -d /run/systemd/system ]; then
+        # Upgrade: a unit the administrator disabled or stopped stays that way.
+        systemctl try-restart eduka-icons-clayify.path >/dev/null 2>&1 || true
       fi
     fi
-    if [ "${EDUKA_ICONS_NO_DEFAULT:-0}" != "1" ] && [ ! -e "$STATE/defaults-initialized" ]; then
+    if [ "${EDUKA_ICONS_NO_DEFAULT:-0}" = "1" ] && [ ! -e "$STATE/defaults-initialized" ]; then
+      # Remember the opt-out: a later upgrade must not change the defaults either.
+      mkdir -p "$STATE"
+      echo none > "$STATE/defaults-initialized"
+    fi
+    if [ ! -e "$STATE/defaults-initialized" ]; then
       variant="${EDUKA_ICONS_DEFAULT:-Light}"
       case "$variant" in Light|Dark|Bright|Comfort) ;; *) variant=Light ;; esac
       if python3 /usr/lib/eduka-icons/select_theme.py --apply "$variant" --system-defaults --quiet; then
@@ -294,6 +303,7 @@ def write(path, text, mode=0o644):
 
 
 def finish_package(package, control_text, scripts, output, name, conffiles=(), fields=None):
+    package.chmod(0o755)                    # the temporary directory is 0700; it becomes "./" in the archive
     for path in package.rglob('*'):
         if path.is_dir() and not path.is_symlink():
             path.chmod(0o755)

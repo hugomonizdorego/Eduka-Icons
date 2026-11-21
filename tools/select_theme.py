@@ -62,6 +62,14 @@ def write_text(path, text):
     os.replace(temporary, target)
 
 
+def lines_of(text):
+    """Split on real line ends only (the built-in line splitter also breaks at form feeds, U+2028 ...)."""
+    lines = text.split('\n')
+    if lines and lines[-1] == '':
+        lines.pop()
+    return lines
+
+
 def backup_once(path):
     """Keep one copy of the file as it was before Eduka-Icons touched it."""
     copy = path.with_name(path.name + '.eduka-icons-backup')
@@ -72,7 +80,7 @@ def backup_once(path):
 
 def read_ini_value(path, section, key):
     try:
-        lines = read_text(path).splitlines()
+        lines = lines_of(read_text(path))
     except OSError:
         return None
     current = None
@@ -88,7 +96,7 @@ def read_ini_value(path, section, key):
 def set_ini_value(path, section, key, value, backup=True):
     """Line-based INI update that keeps comments, order and key case intact."""
     path = Path(path)
-    lines = read_text(path).splitlines() if path.exists() else []
+    lines = lines_of(read_text(path)) if path.exists() else []
     out, current, done, seen = [], None, False, False
     for line in lines:
         stripped = line.strip()
@@ -130,7 +138,7 @@ def remove_ini_value(path, section, key, only_prefix=PREFIX):
     if not path.is_file():
         return False
     current, out, changed = None, [], False
-    for line in read_text(path).splitlines():
+    for line in lines_of(read_text(path)):
         stripped = line.strip()
         if stripped.startswith('[') and stripped.endswith(']'):
             current = stripped[1:-1]
@@ -150,7 +158,7 @@ def set_line(path, pattern, line, create=True, backup=True):
     if not path.exists() and not create:
         return False
     text = read_text(path) if path.exists() else ''
-    lines = [l for l in text.splitlines() if not re.match(pattern, l.strip())]
+    lines = [l for l in lines_of(text) if not re.match(pattern, l.strip())]
     lines.append(line)
     new = '\n'.join(lines) + '\n'
     if new == text:
@@ -179,8 +187,10 @@ def run(command, quiet=True):
 
 def user_dirs():
     home = Path.home()
-    config = Path(os.environ.get('XDG_CONFIG_HOME', home / '.config'))
-    data = Path(os.environ.get('XDG_DATA_HOME', home / '.local/share'))
+    def base(variable, default):         # empty or relative values count as unset (XDG base directory spec)
+        value = os.environ.get(variable, '')
+        return Path(value) if value.startswith('/') else home / default
+    config, data = base('XDG_CONFIG_HOME', '.config'), base('XDG_DATA_HOME', '.local/share')
     return home, config, data
 
 
@@ -293,16 +303,20 @@ def write_follow_state(state):
 
 
 def desktop_variant():
-    """Icon variant that matches the Eduka-Desktop theme of this account."""
+    """Icon variant that matches the Eduka-Desktop theme of this account, or None when it is unknown.
+
+    None covers a settings file that is being rewritten, has no theme yet, or names
+    a theme this version does not know: the icons are left alone in those cases.
+    """
     path = user_dirs()[1] / 'eduka-desktop/desktop/settings.json'
     try:
         style = str(json.loads(path.read_text()).get('theme_style', ''))
     except (OSError, ValueError, AttributeError):
-        style = ''
+        return None
     for name, variant in DESKTOP_THEMES.items():
         if style.casefold() == name.casefold():
             return variant
-    return 'Light'
+    return None
 
 
 def follow_once(quiet=True):
@@ -323,6 +337,8 @@ def follow_once(quiet=True):
     if current == theme_name('Comfort'):
         return 'comfort'  # Accessibility choice: never switched automatically.
     variant = desktop_variant()
+    if variant is None:
+        return 'unknown-desktop-theme'
     wanted = theme_name(variant)
     last = state['last_applied']
     if current == wanted:
@@ -331,6 +347,18 @@ def follow_once(quiet=True):
             write_follow_state(state)
         return 'unchanged'
     chosen_by_user = bool(read_ini_value(config / 'lxqt/lxqt.conf', 'General', 'icon_theme'))
+    if current and not last:
+        # First run for this account, and an Eduka variant is already selected.
+        if chosen_by_user:
+            choice = 'manual'            # picked by hand before the follower existed
+        elif current != theme_name('Light'):
+            choice = 'system-default'    # the ISO builder chose Dark/Bright for everyone
+        else:
+            choice = None                # the neutral default: follow the desktop
+        if choice:
+            state.update(enabled=False, last_applied=current)
+            write_follow_state(state)
+            return choice
     if chosen_by_user and last and current != last:
         # Picked by hand (e.g. in Eduka-Settings) since the last automatic switch: stop following.
         state.update(enabled=False, last_applied=current)
@@ -352,6 +380,8 @@ FOLLOW_MESSAGES = {
     'other-theme': 'Another icon theme is selected; run eduka-icons-select --apply Light first.',
     'comfort': 'Eduka-Icons-Comfort is selected and is never switched automatically.',
     'manual': 'The icon theme was chosen by hand; following is now off.',
+    'system-default': 'The system default is not Light; it is kept. Run eduka-icons-select --follow-desktop to follow.',
+    'unknown-desktop-theme': 'The Eduka-Desktop theme is unknown to this version; the icons were left alone.',
     'not-installed': 'The matching Eduka-Icons variant is not installed.',
 }
 
@@ -407,13 +437,48 @@ def _previous_path(root=Path('/')):
 
 def _line_value(path, pattern):
     try:
-        for line in read_text(path).splitlines():
+        for line in lines_of(read_text(path)):
             match = re.match(pattern, line.strip())
             if match:
                 return match.group(1).strip()
     except OSError:
         pass
     return None
+
+
+LEGACY = '.eduka-icons-backup'       # side-by-side backups written by 0.4 and 0.5
+
+
+def _collect_previous(root, targets):
+    """The defaults that were in place before Eduka-Icons, including what 0.4/0.5 backed up."""
+    def at(path): return root / str(path).lstrip('/')
+    def ours(value): return bool(value) and value.strip('"\'').startswith(PREFIX)
+    def old(path): return path.with_name(path.name + LEGACY)
+
+    ini = []
+    for path, section, key in targets:
+        file, value = at(path), read_ini_value(at(path), section, key)
+        if ours(value):                  # already ours: the original is in the old backup, if any
+            before = read_ini_value(old(file), section, key)
+            ini.append([path, section, key, None if ours(before) else before, old(file).exists()])
+        else:
+            ini.append([path, section, key, value or None, file.exists()])
+    skel, value = at(GTK2_SKEL), _line_value(at(GTK2_SKEL), GTK2_LINE)
+    if ours(value):
+        before = _line_value(old(skel), GTK2_LINE)
+        gtk2, gtk2_existed = (None if ours(before) else before), old(skel).exists()
+    else:
+        gtk2, gtk2_existed = value or None, skel.exists()
+    xfce = None
+    for candidate in (at(XFCE_SYSTEM), old(at(XFCE_SYSTEM))):
+        try:
+            match = re.search(XFCE_VALUE, read_text(candidate))
+        except OSError:
+            continue
+        if match and not ours(match.group(2)):
+            xfce = match.group(2)
+            break
+    return {'ini': ini, 'gtk2': gtk2, 'gtk2_existed': gtk2_existed, 'xfce': xfce}
 
 
 def _remember_previous(root, targets):
@@ -425,18 +490,17 @@ def _remember_previous(root, targets):
     record = _previous_path(root)
     if record.exists():
         return
+    write_text(record, json.dumps(_collect_previous(root, targets), indent=2) + '\n')
     def at(path): return root / str(path).lstrip('/')
-    def keep(value): return value if value and not value.strip('"\'').startswith(PREFIX) else None
-    previous = {'ini': [[path, section, key, keep(read_ini_value(at(path), section, key)), at(path).exists()]
-                        for path, section, key in targets],
-                'gtk2': keep(_line_value(at(GTK2_SKEL), GTK2_LINE)), 'gtk2_existed': at(GTK2_SKEL).exists(),
-                'xfce': None}
-    try:
-        match = re.search(XFCE_VALUE, read_text(at(XFCE_SYSTEM)))
-        previous['xfce'] = keep(match.group(2)) if match else None
-    except OSError:
-        pass
-    write_text(record, json.dumps(previous, indent=2) + '\n')
+    for path in [at(GTK2_SKEL), at(XFCE_SYSTEM), *(at(p) for p, _, _ in targets)]:
+        path.with_name(path.name + LEGACY).unlink(missing_ok=True)      # their values are recorded now
+
+
+def migrate_system(quiet=True, root=Path('/')):
+    """After an upgrade from 0.4/0.5: move the old side-by-side backups into the record."""
+    def at(path): return root / str(path).lstrip('/')
+    if (at(STATE) / 'system-defaults.json').exists() or (at(STATE) / 'defaults-initialized').exists():
+        _remember_previous(root, system_targets())
 
 
 def apply_system(variant, quiet=False, root=Path('/')):
@@ -471,7 +535,7 @@ def apply_system(variant, quiet=False, root=Path('/')):
 def _drop_if_empty(path):
     """Delete a settings file that only holds empty sections (Eduka-Icons created it)."""
     try:
-        if all(not l.strip() or l.strip().startswith('[') for l in read_text(path).splitlines()):
+        if all(not l.strip() or l.strip().startswith('[') for l in lines_of(read_text(path))):
             path.unlink()
             path.parent.rmdir()
     except OSError:
@@ -487,7 +551,7 @@ def reset_system(quiet=False, root=Path('/')):
         previous = json.loads(_previous_path(root).read_text())
         assert isinstance(previous, dict)
     except (OSError, ValueError, AssertionError):
-        previous = {}
+        previous = _collect_previous(root, system_targets())      # set up by 0.4/0.5
     known = {(p, s, k): (value, existed) for p, s, k, value, existed in previous.get('ini', [])
              if all(isinstance(x, str) for x in (p, s, k))}
     targets = dict.fromkeys([*system_targets(), *known])
@@ -504,7 +568,7 @@ def reset_system(quiet=False, root=Path('/')):
                 _drop_if_empty(file)
     skel = at(GTK2_SKEL)
     if PREFIX in (_line_value(skel, GTK2_LINE) or ''):
-        lines = [l for l in read_text(skel).splitlines() if not re.match(GTK2_LINE, l.strip())]
+        lines = [l for l in lines_of(read_text(skel)) if not re.match(GTK2_LINE, l.strip())]
         if isinstance(previous.get('gtk2'), str) and previous['gtk2']:
             lines.append(f'gtk-icon-theme-name={previous["gtk2"]}')
         if lines or previous.get('gtk2_existed'):
@@ -517,11 +581,8 @@ def reset_system(quiet=False, root=Path('/')):
         match = re.search(XFCE_VALUE, text)
         if match and match.group(2).startswith(PREFIX):
             old = previous.get('xfce') if isinstance(previous.get('xfce'), str) else None
-            legacy = xfce.with_name(xfce.name + '.eduka-icons-backup')      # written by 0.4/0.5
             if old:
                 write_text(xfce, re.sub(XFCE_VALUE, lambda m: m.group(1) + old + m.group(3), text))
-            elif legacy.is_file():
-                os.replace(legacy, xfce)
     # Side-by-side backups of 0.4/0.5 (they leaked into new homes through /etc/skel).
     for path in [at(GTK2_SKEL), xfce, *(at(p) for p, _, _ in targets)]:
         path.with_name(path.name + '.eduka-icons-backup').unlink(missing_ok=True)
@@ -652,6 +713,7 @@ def main(argv=None):
                         help='colour of the standard folders: default, or one of --list-folder-colours')
     parser.add_argument('--system', action='store_true', help='with --folder-colour: for all users (root)')
     parser.add_argument('--list-folder-colours', action='store_true', help='print the available folder colours')
+    parser.add_argument('--migrate-system-defaults', action='store_true', help=argparse.SUPPRESS)
     parser.add_argument('--status', action='store_true', help='show installed variants and the current selection')
     parser.add_argument('--quiet', action='store_true')
     args = parser.parse_args(argv)
@@ -663,6 +725,10 @@ def main(argv=None):
         print('default ' + ' '.join(folder_colours()))
     if args.folder_colour:
         set_folder_colour(args.folder_colour, args.system, args.quiet)
+    if args.migrate_system_defaults:
+        if os.geteuid() != 0:
+            raise SystemExit('--migrate-system-defaults needs root.')
+        migrate_system(args.quiet)
     if args.reset_system_defaults:
         reset_system(args.quiet)
     if args.status:
@@ -685,7 +751,7 @@ def main(argv=None):
         state = read_follow_state()
         if not args.watch:
             # An explicit request turns following back on from the current theme.
-            state.update(enabled=True, last_applied=current_user_theme())
+            state.update(enabled=True, last_applied=current_user_theme() or theme_name('Light'))
             write_follow_state(state)
         result = follow_once(args.quiet)
         if not args.watch and FOLLOW_MESSAGES.get(result):
