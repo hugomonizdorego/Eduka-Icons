@@ -10,6 +10,7 @@ import subprocess
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
+BUILD = Path(os.environ.get('EDUKA_ICONS_BUILD', ROOT / 'build')).resolve()
 VERSION = (ROOT / 'VERSION').read_text().strip()
 VARIANTS = ('Light', 'Dark', 'Bright', 'Comfort')
 THEMES = ' '.join(f'Eduka-Icons-{v}' for v in VARIANTS)
@@ -35,8 +36,10 @@ Description: Edukasaun OS clay icon themes (Light, Dark, Bright, Comfort)
   * Eduka-Icons-Comfort - eye comfort and low vision: dark contours,
     warm low-blue colours, high-contrast symbolic icons
  .
- Panel and toolbar icons are colourful clay; symbolic icons are two-tone and
- still recoloured by GTK and KDE. Applications installed later get a clay icon
+ System-tray, panel and toolbar icons are normal flat one-colour glyphs
+ (clay artwork starts at 32 px), every application, file type and device has
+ its own icon, folders come in eight colours (eduka-icons-select
+ --folder-colour), and applications installed later get a clay icon
  automatically (eduka-icons-clayify runs after apt/dpkg and Flatpak changes).
  .
  On first installation Eduka-Icons-Light becomes the system default for
@@ -56,11 +59,11 @@ Depends: hicolor-icon-theme
 Installed-Size: {size}
 Homepage: https://github.com/hugomonizdorego/Eduka-Icons
 Description: {summary}
- Thousands of application icons in the Eduka clay style, each application
- with its own artwork (GIMP, Inkscape, Krita, Chrome, Brave, WhatsApp,
- Telegram, Google Earth, KDE, GNOME, LXQt, education, games, office, audio,
- video and more). Shared by the Eduka-Icons themes; install the eduka-icons
- package to use them.{extra}
+ Thousands of application, file-type and device icons in the Eduka clay
+ style, each application with its own artwork (GIMP, Inkscape, Krita, Chrome,
+ Brave, WhatsApp, Telegram, Google Earth, KDE, GNOME, LXQt, education, games,
+ office, audio, video and more). Shared by the Eduka-Icons themes; install
+ the eduka-icons package to use them.{extra}
 '''
 
 POSTINST = '''#!/bin/sh
@@ -74,9 +77,21 @@ case "$1" in
       done
     fi
     # Clay icons for applications that are already installed.
-    python3 /usr/lib/eduka-icons/clayify_installed.py --quiet || true
+    # (Bounded: a very large installation finishes the rest on the next apt run.)
+    if command -v timeout >/dev/null 2>&1; then
+      timeout 900 python3 /usr/lib/eduka-icons/clayify_installed.py --quiet || true
+    else
+      python3 /usr/lib/eduka-icons/clayify_installed.py --quiet || true
+    fi
+    # Backup files written next to the originals by 0.4/0.5 leaked into new home directories.
+    rm -f /etc/skel/.gtkrc-2.0.eduka-icons-backup
     if command -v systemctl >/dev/null 2>&1; then
+      # "enable" also works in a chroot such as Cubic; start only on a running system.
       systemctl enable eduka-icons-clayify.path >/dev/null 2>&1 || true
+      if [ -d /run/systemd/system ]; then
+        systemctl daemon-reload >/dev/null 2>&1 || true
+        systemctl restart eduka-icons-clayify.path >/dev/null 2>&1 || true
+      fi
     fi
     if [ "${EDUKA_ICONS_NO_DEFAULT:-0}" != "1" ] && [ ! -e "$STATE/defaults-initialized" ]; then
       variant="${EDUKA_ICONS_DEFAULT:-Light}"
@@ -97,10 +112,13 @@ exit 0
 PRERM = '''#!/bin/sh
 set -e
 case "$1" in
-  remove|deconfigure)
+  remove)
     python3 /usr/lib/eduka-icons/select_theme.py --reset-system-defaults --quiet || true
+    python3 /usr/lib/eduka-icons/select_theme.py --folder-colour default --system --quiet || true
+    python3 /usr/lib/eduka-icons/clayify_installed.py --remove --quiet || true
     rm -f /var/lib/eduka-icons/defaults-initialized /var/lib/eduka-icons/clayify.json
     if command -v systemctl >/dev/null 2>&1; then
+      [ -d /run/systemd/system ] && systemctl stop eduka-icons-clayify.path >/dev/null 2>&1 || true
       systemctl disable eduka-icons-clayify.path >/dev/null 2>&1 || true
     fi
     rm -rf /usr/share/icons/Eduka-Icons-Local /usr/share/icons/Eduka-Icons-Local-Comfort
@@ -117,7 +135,8 @@ case "$1" in
       rm -f "/usr/share/icons/$theme/icon-theme.cache"
       rmdir "/usr/share/icons/$theme" 2>/dev/null || true
     done
-    [ "$1" = purge ] && rm -rf /var/lib/eduka-icons
+    if [ "$1" = purge ]; then rm -rf /var/lib/eduka-icons; fi
+    if [ -d /run/systemd/system ]; then systemctl daemon-reload >/dev/null 2>&1 || true; fi
     ;;
 esac
 exit 0
@@ -304,7 +323,7 @@ def docs(package, name):
 
 def build(output):
     for theme in (*(f'Eduka-Icons-{v}' for v in VARIANTS), *APP_THEMES):
-        if not (ROOT / f'build/themes/{theme}/index.theme').is_file():
+        if not (BUILD / f'themes/{theme}/index.theme').is_file():
             raise SystemExit('Run "make build" first.')
     output.mkdir(parents=True, exist_ok=True)
     ignore = shutil.ignore_patterns('icon-theme.cache', '.eduka-build-owner')
@@ -314,7 +333,7 @@ def build(output):
         icons.mkdir(parents=True)
         for variant in VARIANTS:
             name = f'Eduka-Icons-{variant}'
-            shutil.copytree(ROOT / 'build/themes' / name, icons / name, symlinks=True, copy_function=stage_file, ignore=ignore)
+            shutil.copytree(BUILD / 'themes' / name, icons / name, symlinks=True, copy_function=stage_file, ignore=ignore)
         lib = package / 'usr/lib/eduka-icons'
         for module in ('select_theme.py', 'clayify_installed.py', 'clayify.py', 'render.py'):
             write(lib / module, (ROOT / 'tools' / module).read_text(), 0o755 if module in ('select_theme.py', 'clayify_installed.py') else 0o644)
@@ -337,7 +356,7 @@ def build(output):
                        output, 'eduka-icons', ('/etc/xdg/autostart/eduka-icons-follow.desktop',
                                                '/etc/apt/apt.conf.d/80eduka-icons-clayify'))
     for package_name, theme, summary, extra in (
-            ('eduka-icons-apps', 'Eduka-Icons-Apps', 'Edukasaun OS clay application icons', ''),
+            ('eduka-icons-apps', 'Eduka-Icons-Apps', 'Edukasaun OS clay application and file-type icons', ''),
             ('eduka-icons-apps-comfort', 'Eduka-Icons-Apps-Comfort',
              'Edukasaun OS clay application icons, eye-comfort edition',
              '\n .\n Comfort edition for low vision and long sessions: dark contours, warm\n low-blue colours and raised contrast, used by Eduka-Icons-Comfort.')):
@@ -345,7 +364,7 @@ def build(output):
             package = Path(directory)
             icons = package / 'usr/share/icons'
             icons.mkdir(parents=True)
-            shutil.copytree(ROOT / 'build/themes' / theme, icons / theme, symlinks=True, copy_function=stage_file, ignore=ignore)
+            shutil.copytree(BUILD / 'themes' / theme, icons / theme, symlinks=True, copy_function=stage_file, ignore=ignore)
             docs(package, package_name)
             finish_package(package, APPS_CONTROL, {'postinst': APPS_POSTINST, 'postrm': APPS_POSTRM},
                            output, package_name, fields={'package': package_name, 'summary': summary,

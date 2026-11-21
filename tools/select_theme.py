@@ -43,6 +43,25 @@ def log(message, quiet=False):
         print(message, flush=True)
 
 
+def read_text(path):
+    """Read a settings file without losing bytes that are not valid UTF-8."""
+    return Path(path).read_text(encoding='utf-8', errors='surrogateescape')
+
+
+def write_text(path, text):
+    """Replace a settings file atomically, keeping its permissions."""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    target = Path(os.path.realpath(path)) if path.is_symlink() else path   # keep dotfile-manager links
+    temporary = target.with_name(f'.{target.name}.eduka-tmp')
+    temporary.write_text(text, encoding='utf-8', errors='surrogateescape')
+    try:
+        shutil.copymode(target, temporary)
+    except OSError:
+        pass
+    os.replace(temporary, target)
+
+
 def backup_once(path):
     """Keep one copy of the file as it was before Eduka-Icons touched it."""
     copy = path.with_name(path.name + '.eduka-icons-backup')
@@ -53,7 +72,7 @@ def backup_once(path):
 
 def read_ini_value(path, section, key):
     try:
-        lines = Path(path).read_text(encoding='utf-8', errors='ignore').splitlines()
+        lines = read_text(path).splitlines()
     except OSError:
         return None
     current = None
@@ -69,8 +88,7 @@ def read_ini_value(path, section, key):
 def set_ini_value(path, section, key, value, backup=True):
     """Line-based INI update that keeps comments, order and key case intact."""
     path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    lines = path.read_text(encoding='utf-8', errors='ignore').splitlines() if path.exists() else []
+    lines = read_text(path).splitlines() if path.exists() else []
     out, current, done, seen = [], None, False, False
     for line in lines:
         stripped = line.strip()
@@ -99,11 +117,11 @@ def set_ini_value(path, section, key, value, backup=True):
         if not done:
             out.append(f'{key}={value}')
     text = '\n'.join(out) + '\n'
-    if path.exists() and path.read_text(encoding='utf-8', errors='ignore') == text:
+    if path.exists() and read_text(path) == text:
         return False
     if backup:
         backup_once(path)
-    path.write_text(text, encoding='utf-8')
+    write_text(path, text)
     return True
 
 
@@ -112,7 +130,7 @@ def remove_ini_value(path, section, key, only_prefix=PREFIX):
     if not path.is_file():
         return False
     current, out, changed = None, [], False
-    for line in path.read_text(encoding='utf-8', errors='ignore').splitlines():
+    for line in read_text(path).splitlines():
         stripped = line.strip()
         if stripped.startswith('[') and stripped.endswith(']'):
             current = stripped[1:-1]
@@ -122,31 +140,24 @@ def remove_ini_value(path, section, key, only_prefix=PREFIX):
             continue
         out.append(line)
     if changed:
-        backup = path.with_name(path.name + '.eduka-icons-backup')
-        if not backup.exists() and all(not l.strip() or l.strip().startswith('[') for l in out):
-            path.unlink()  # Only Eduka-Icons ever wrote this file.
-            try: path.parent.rmdir()
-            except OSError: pass
-        else:
-            path.write_text('\n'.join(out) + '\n', encoding='utf-8')
-            if backup.exists(): backup.unlink()
+        write_text(path, '\n'.join(out) + '\n' if out else '')
     return changed
 
 
-def set_line(path, pattern, line, create=True):
+def set_line(path, pattern, line, create=True, backup=True):
     """Replace a 'key = value' style line (GTK 2, xsettingsd) or append it."""
     path = Path(path)
     if not path.exists() and not create:
         return False
-    text = path.read_text(encoding='utf-8', errors='ignore') if path.exists() else ''
+    text = read_text(path) if path.exists() else ''
     lines = [l for l in text.splitlines() if not re.match(pattern, l.strip())]
     lines.append(line)
     new = '\n'.join(lines) + '\n'
     if new == text:
         return False
-    backup_once(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(new, encoding='utf-8')
+    if backup:
+        backup_once(path)
+    write_text(path, new)
     return True
 
 
@@ -189,54 +200,71 @@ def apply_user(variant, quiet=False):
         raise SystemExit('Run the user selection without sudo. Use --system-defaults for an ISO.')
     theme = theme_name(variant)
     home, config, _ = user_dirs()
-    done = []
+    done, failed = [], []
+
+    def step(label, action, *args, **kwargs):
+        """One settings file: a read-only or broken file must not stop the others."""
+        try:
+            action(*args, **kwargs)
+        except (OSError, UnicodeError) as error:
+            failed.append(f'{label} ({error.__class__.__name__})')
+            return False
+        if label:
+            done.append(label)
+        return True
+
+    def xfce_file(path):
+        text = read_text(path)
+        new = re.sub(r'(<property name="IconThemeName" type="string" value=")[^"]*(")', rf'\g<1>{theme}\g<2>', text)
+        if new != text:
+            backup_once(path); write_text(path, new)
+
     # LXQt and Eduka-Desktop (Eduka-Menu, Eduka-Panel, Eduka-Settings).
-    set_ini_value(config / 'lxqt/lxqt.conf', 'General', 'icon_theme', theme); done.append('LXQt/Eduka-Desktop')
+    step('LXQt/Eduka-Desktop', set_ini_value, config / 'lxqt/lxqt.conf', 'General', 'icon_theme', theme)
     # GTK 3 and GTK 4 applications in every session.
     for gtk in ('gtk-3.0', 'gtk-4.0'):
-        set_ini_value(config / gtk / 'settings.ini', 'Settings', 'gtk-icon-theme-name', theme)
+        step('GTK 2/3/4', set_ini_value, config / gtk / 'settings.ini', 'Settings', 'gtk-icon-theme-name', theme)
     # GTK 2 applications.
-    set_line(home / '.gtkrc-2.0', r'^gtk-icon-theme-name\s*=', f'gtk-icon-theme-name="{theme}"')
-    done.append('GTK 2/3/4')
+    step('GTK 2/3/4', set_line, home / '.gtkrc-2.0', r'^gtk-icon-theme-name\s*=', f'gtk-icon-theme-name="{theme}"')
     # GNOME, Budgie, Unity, Cinnamon, MATE, Pantheon, sway (gsettings / dconf).
-    if shutil.which('gsettings') and os.environ.get('DBUS_SESSION_BUS_ADDRESS'):
+    bus = os.environ.get('DBUS_SESSION_BUS_ADDRESS')
+    if shutil.which('gsettings') and bus:
         for schema, key in GSETTINGS:
             if run(['gsettings', 'set', schema, key, theme]):
                 done.append(schema)
     # Xfce.
-    if shutil.which('xfconf-query') and os.environ.get('DBUS_SESSION_BUS_ADDRESS'):
+    xsettings = config / 'xfce4/xfconf/xfce-perchannel-xml/xsettings.xml'
+    if shutil.which('xfconf-query') and bus:
         if run(['xfconf-query', '-c', 'xsettings', '-p', '/Net/IconThemeName', '-n', '-t', 'string', '-s', theme]):
             done.append('Xfce')
-    else:
-        xsettings = config / 'xfce4/xfconf/xfce-perchannel-xml/xsettings.xml'
-        if xsettings.is_file():
-            text = xsettings.read_text(encoding='utf-8', errors='ignore')
-            new = re.sub(r'(<property name="IconThemeName" type="string" value=")[^"]*(")', rf'\g<1>{theme}\g<2>', text)
-            if new != text:
-                backup_once(xsettings); xsettings.write_text(new, encoding='utf-8'); done.append('Xfce')
+    elif xsettings.is_file():
+        step('Xfce', xfce_file, xsettings)
     # KDE Plasma 5/6.
-    set_ini_value(config / 'kdeglobals', 'Icons', 'Theme', theme); done.append('KDE')
-    if shutil.which('dbus-send') and os.environ.get('DBUS_SESSION_BUS_ADDRESS'):
+    step('KDE', set_ini_value, config / 'kdeglobals', 'Icons', 'Theme', theme)
+    if shutil.which('dbus-send') and bus:
         run(['dbus-send', '--session', '--type=signal', '/KIconLoader', 'org.kde.KIconLoader.iconChanged', 'int32:0'])
     # Qt outside LXQt/KDE.
     for tool in ('qt5ct', 'qt6ct'):
         conf = config / tool / f'{tool}.conf'
         if conf.exists() or shutil.which(tool):
-            set_ini_value(conf, 'Appearance', 'icon_theme', theme); done.append(tool)
+            step(tool, set_ini_value, conf, 'Appearance', 'icon_theme', theme)
     # LXDE.
     lxde = config / 'lxsession/LXDE/desktop.conf'
     if lxde.exists():
-        set_ini_value(lxde, 'GTK', 'sNet/IconThemeName', theme); done.append('LXDE')
+        step('LXDE', set_ini_value, lxde, 'GTK', 'sNet/IconThemeName', theme)
     # xsettingsd (i3, Openbox, bspwm, Fluxbox, ...).
     for path in (home / '.xsettingsd', config / 'xsettingsd/xsettingsd.conf'):
-        if path.exists():
-            set_line(path, r'^Net/IconThemeName\s', f'Net/IconThemeName "{theme}"'); done.append('xsettingsd')
+        if path.exists() and step('xsettingsd', set_line, path, r'^Net/IconThemeName\s', f'Net/IconThemeName "{theme}"'):
             run(['pkill', '-HUP', '-x', 'xsettingsd'])
     # Ask Eduka-Desktop components to reload their icons.
     runtime = os.environ.get('XDG_RUNTIME_DIR')
     if runtime and Path(runtime, 'eduka-desktop').is_dir():
-        Path(runtime, 'eduka-desktop', 'reload').write_text(str(datetime.datetime.now().timestamp()))
+        step('', Path(runtime, 'eduka-desktop', 'reload').write_text, str(datetime.datetime.now().timestamp()))
+    if not done:
+        raise SystemExit(f'Could not write any settings file for {theme}: ' + ', '.join(failed))
     log(f'Selected {theme} for: ' + ', '.join(dict.fromkeys(done)) + '.', quiet)
+    if failed:
+        print('Not written: ' + ', '.join(dict.fromkeys(failed)) + '.', file=sys.stderr)
     log('Applications started before the change pick it up after a restart or a new login.', quiet)
     return theme
 
@@ -249,15 +277,19 @@ def follow_state_path():
 
 def read_follow_state():
     try:
-        return json.loads(follow_state_path().read_text())
+        state = json.loads(follow_state_path().read_text())
     except (OSError, ValueError):
-        return {'enabled': True, 'last_applied': ''}
+        state = None
+    if not isinstance(state, dict):
+        state = {}
+    return {'enabled': state.get('enabled', True) is not False, 'last_applied': str(state.get('last_applied') or '')}
 
 
 def write_follow_state(state):
-    path = follow_state_path()
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(state, indent=2) + '\n')
+    try:
+        write_text(follow_state_path(), json.dumps(state, indent=2) + '\n')
+    except OSError:
+        pass  # a read-only home must not break the session
 
 
 def desktop_variant():
@@ -274,33 +306,54 @@ def desktop_variant():
 
 
 def follow_once(quiet=True):
-    """Switch Light/Dark/Bright with the Eduka-Desktop theme, never against a user choice."""
+    """Switch Light/Dark/Bright with the Eduka-Desktop theme, never against a user choice.
+
+    Returns a short reason: 'applied', 'unchanged', 'no-desktop', 'disabled',
+    'other-theme', 'comfort', 'manual' or 'not-installed'.
+    """
     config = user_dirs()[1]
     if not (config / 'eduka-desktop/desktop/settings.json').is_file():
-        return False  # Eduka-Desktop is not used by this account.
+        return 'no-desktop'  # Eduka-Desktop is not used by this account.
     state = read_follow_state()
-    if not state.get('enabled', True):
-        return False
+    if not state['enabled']:
+        return 'disabled'
     current = current_user_theme()
     if current and not current.startswith(PREFIX):
-        return False  # A different icon theme was chosen; respect it.
+        return 'other-theme'  # A different icon theme was chosen; respect it.
     if current == theme_name('Comfort'):
-        return False  # Accessibility choice: never switched automatically.
+        return 'comfort'  # Accessibility choice: never switched automatically.
     variant = desktop_variant()
     wanted = theme_name(variant)
+    last = state['last_applied']
+    if current == wanted:
+        if last != wanted:   # remember it, so a later change by hand is recognised
+            state.update(last_applied=wanted)
+            write_follow_state(state)
+        return 'unchanged'
     chosen_by_user = bool(read_ini_value(config / 'lxqt/lxqt.conf', 'General', 'icon_theme'))
-    last = state.get('last_applied', '')
-    if chosen_by_user and current != (last or wanted):
-        # Picked by hand (e.g. in Eduka-Settings): stop following.
+    if chosen_by_user and last and current != last:
+        # Picked by hand (e.g. in Eduka-Settings) since the last automatic switch: stop following.
         state.update(enabled=False, last_applied=current)
         write_follow_state(state)
-        return False
-    if wanted == current or not installed(variant, [user_dirs()[2] / 'icons']):
-        return False
+        return 'manual'
+    if not installed(variant, [user_dirs()[2] / 'icons']):
+        return 'not-installed'
     apply_user(variant, quiet)
     state.update(enabled=True, last_applied=wanted)
     write_follow_state(state)
-    return True
+    return 'applied'
+
+
+FOLLOW_MESSAGES = {
+    'applied': None,
+    'unchanged': 'The icon theme already matches the Eduka-Desktop theme.',
+    'no-desktop': 'Eduka-Desktop settings were not found for this account; nothing to follow.',
+    'disabled': 'Following is switched off.',
+    'other-theme': 'Another icon theme is selected; run eduka-icons-select --apply Light first.',
+    'comfort': 'Eduka-Icons-Comfort is selected and is never switched automatically.',
+    'manual': 'The icon theme was chosen by hand; following is now off.',
+    'not-installed': 'The matching Eduka-Icons variant is not installed.',
+}
 
 
 def watch(interval=3.0):
@@ -310,12 +363,15 @@ def watch(interval=3.0):
     stamp = None
     while True:
         try:
-            now = path.stat().st_mtime
+            now = path.stat().st_mtime_ns
         except OSError:
             now = None
         if now != stamp:
             stamp = now
-            follow_once()
+            try:
+                follow_once()
+            except (Exception, SystemExit) as error:   # keep the session helper alive
+                print(f'eduka-icons-select: {error}', file=sys.stderr)
         time.sleep(interval)
 
 
@@ -339,6 +395,50 @@ def compile_schemas():
         run(['glib-compile-schemas', str(GSCHEMA_DIR)])
 
 
+XFCE_SYSTEM = '/etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xsettings.xml'
+XFCE_VALUE = r'(<property name="IconThemeName" type="string" value=")([^"]*)(")'
+GTK2_SKEL = '/etc/skel/.gtkrc-2.0'
+GTK2_LINE = r'^gtk-icon-theme-name\s*=\s*(.*)$'
+
+
+def _previous_path(root=Path('/')):
+    return root / str(STATE).lstrip('/') / 'backup/previous-defaults.json'
+
+
+def _line_value(path, pattern):
+    try:
+        for line in read_text(path).splitlines():
+            match = re.match(pattern, line.strip())
+            if match:
+                return match.group(1).strip()
+    except OSError:
+        pass
+    return None
+
+
+def _remember_previous(root, targets):
+    """Record the defaults that were in place before Eduka-Icons, once.
+
+    Kept under /var/lib/eduka-icons/backup: backup files next to the originals
+    would be copied into every new home directory from /etc/skel.
+    """
+    record = _previous_path(root)
+    if record.exists():
+        return
+    def at(path): return root / str(path).lstrip('/')
+    def keep(value): return value if value and not value.strip('"\'').startswith(PREFIX) else None
+    previous = {'ini': [[path, section, key, keep(read_ini_value(at(path), section, key)), at(path).exists()]
+                        for path, section, key in targets],
+                'gtk2': keep(_line_value(at(GTK2_SKEL), GTK2_LINE)), 'gtk2_existed': at(GTK2_SKEL).exists(),
+                'xfce': None}
+    try:
+        match = re.search(XFCE_VALUE, read_text(at(XFCE_SYSTEM)))
+        previous['xfce'] = keep(match.group(2)) if match else None
+    except OSError:
+        pass
+    write_text(record, json.dumps(previous, indent=2) + '\n')
+
+
 def apply_system(variant, quiet=False, root=Path('/')):
     if os.geteuid() != 0 and root == Path('/'):
         raise SystemExit('System defaults require root (sudo, or the Cubic terminal).')
@@ -346,48 +446,174 @@ def apply_system(variant, quiet=False, root=Path('/')):
     if root == Path('/') and not installed(variant):
         raise SystemExit(f'{theme} is not installed in /usr/share/icons. Install the eduka-icons package first.')
     def at(path): return root / str(path).lstrip('/')
-    for path, section, key in system_targets():
-        set_ini_value(at(path), section, key, theme)
-    set_line(at('/etc/skel/.gtkrc-2.0'), r'^gtk-icon-theme-name\s*=', f'gtk-icon-theme-name="{theme}"')
-    xfce = at('/etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xsettings.xml')
+    targets = system_targets()
+    _remember_previous(root, targets)
+    for path, section, key in targets:
+        set_ini_value(at(path), section, key, theme, backup=False)
+    set_line(at(GTK2_SKEL), r'^gtk-icon-theme-name\s*=', f'gtk-icon-theme-name="{theme}"', backup=False)
+    xfce = at(XFCE_SYSTEM)
     if xfce.is_file():
-        text = xfce.read_text(encoding='utf-8', errors='ignore')
-        new = re.sub(r'(<property name="IconThemeName" type="string" value=")[^"]*(")', rf'\g<1>{theme}\g<2>', text)
+        text = read_text(xfce)
+        new = re.sub(XFCE_VALUE, rf'\g<1>{theme}\g<3>', text)
         if new != text:
-            backup_once(xfce); xfce.write_text(new, encoding='utf-8')
+            write_text(xfce, new)
     schema = at(GSCHEMA)
-    schema.parent.mkdir(parents=True, exist_ok=True)
-    schema.write_text('# Written by eduka-icons-select --system-defaults\n' +
-                      ''.join(f'[{s}]\n{k}=\'{theme}\'\n\n' for s, k in GSETTINGS))
+    write_text(schema, '# Written by eduka-icons-select --system-defaults\n' +
+               ''.join(f'[{s}]\n{k}=\'{theme}\'\n\n' for s, k in GSETTINGS))
     if root == Path('/'):
         compile_schemas()
-    state = at(STATE)
-    state.mkdir(parents=True, exist_ok=True)
-    (state / 'system-defaults.json').write_text(json.dumps({'theme': theme, 'set_at': datetime.datetime.now().isoformat(timespec='seconds')}, indent=2) + '\n')
+    write_text(at(STATE) / 'system-defaults.json', json.dumps(
+        {'theme': theme, 'set_at': datetime.datetime.now().isoformat(timespec='seconds')}, indent=2) + '\n')
     log(f'{theme} is now the default icon theme for new accounts and the live session.', quiet)
     log('LXQt/Eduka-Desktop, GTK 2/3/4, GNOME/Cinnamon/MATE/Budgie, KDE, Xfce, LXDE and qt5ct/qt6ct defaults were set.', quiet)
 
 
-def reset_system(quiet=False):
-    if os.geteuid() != 0:
+def _drop_if_empty(path):
+    """Delete a settings file that only holds empty sections (Eduka-Icons created it)."""
+    try:
+        if all(not l.strip() or l.strip().startswith('[') for l in read_text(path).splitlines()):
+            path.unlink()
+            path.parent.rmdir()
+    except OSError:
+        pass
+
+
+def reset_system(quiet=False, root=Path('/')):
+    """Put back the defaults that were in place before Eduka-Icons was selected."""
+    if os.geteuid() != 0 and root == Path('/'):
         raise SystemExit('Resetting system defaults requires root.')
-    for path, section, key in system_targets():
-        remove_ini_value(Path(path), section, key)
-    skel = Path('/etc/skel/.gtkrc-2.0')
-    if skel.is_file():
-        lines = [l for l in skel.read_text().splitlines() if not (l.startswith('gtk-icon-theme-name') and PREFIX in l)]
-        if lines: skel.write_text('\n'.join(lines) + '\n')
-        else: skel.unlink()
-    xfce = Path('/etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xsettings.xml')
-    backup = xfce.with_name(xfce.name + '.eduka-icons-backup')
-    if xfce.is_file() and backup.is_file() and PREFIX in xfce.read_text(errors='ignore'):
-        shutil.move(str(backup), str(xfce))
-    if GSCHEMA.exists():
-        GSCHEMA.unlink()
-        compile_schemas()
-    if (STATE / 'system-defaults.json').exists():
-        (STATE / 'system-defaults.json').unlink()
-    log('Eduka-Icons system defaults were removed.', quiet)
+    def at(path): return root / str(path).lstrip('/')
+    try:
+        previous = json.loads(_previous_path(root).read_text())
+        assert isinstance(previous, dict)
+    except (OSError, ValueError, AssertionError):
+        previous = {}
+    known = {(p, s, k): (value, existed) for p, s, k, value, existed in previous.get('ini', [])
+             if all(isinstance(x, str) for x in (p, s, k))}
+    targets = dict.fromkeys([*system_targets(), *known])
+    for path, section, key in targets:
+        file = at(path)
+        if not (read_ini_value(file, section, key) or '').startswith(PREFIX):
+            continue                       # changed by the administrator since: leave it alone
+        value, existed = known.get((path, section, key), (None, True))
+        if isinstance(value, str) and value:
+            set_ini_value(file, section, key, value, backup=False)
+        else:
+            remove_ini_value(file, section, key)
+            if not existed:
+                _drop_if_empty(file)
+    skel = at(GTK2_SKEL)
+    if PREFIX in (_line_value(skel, GTK2_LINE) or ''):
+        lines = [l for l in read_text(skel).splitlines() if not re.match(GTK2_LINE, l.strip())]
+        if isinstance(previous.get('gtk2'), str) and previous['gtk2']:
+            lines.append(f'gtk-icon-theme-name={previous["gtk2"]}')
+        if lines or previous.get('gtk2_existed'):
+            write_text(skel, '\n'.join(lines) + '\n' if lines else '')
+        else:
+            skel.unlink()
+    xfce = at(XFCE_SYSTEM)
+    if xfce.is_file():
+        text = read_text(xfce)
+        match = re.search(XFCE_VALUE, text)
+        if match and match.group(2).startswith(PREFIX):
+            old = previous.get('xfce') if isinstance(previous.get('xfce'), str) else None
+            legacy = xfce.with_name(xfce.name + '.eduka-icons-backup')      # written by 0.4/0.5
+            if old:
+                write_text(xfce, re.sub(XFCE_VALUE, lambda m: m.group(1) + old + m.group(3), text))
+            elif legacy.is_file():
+                os.replace(legacy, xfce)
+    # Side-by-side backups of 0.4/0.5 (they leaked into new homes through /etc/skel).
+    for path in [at(GTK2_SKEL), xfce, *(at(p) for p, _, _ in targets)]:
+        path.with_name(path.name + '.eduka-icons-backup').unlink(missing_ok=True)
+    schema = at(GSCHEMA)
+    if schema.exists():
+        schema.unlink()
+        if root == Path('/'):
+            compile_schemas()
+    (at(STATE) / 'system-defaults.json').unlink(missing_ok=True)
+    _previous_path(root).unlink(missing_ok=True)
+    try: _previous_path(root).parent.rmdir()
+    except OSError: pass
+    log('Eduka-Icons system defaults were removed; the earlier defaults are back.', quiet)
+
+
+# --- folder colours ---------------------------------------------------------------
+
+FOLDER_MARK = '.eduka-folder-colour'
+
+
+def folder_colours():
+    """Colours shipped with the installed themes (from the asset file names)."""
+    colours = set()
+    for root in ICON_ROOTS:
+        assets = root / theme_name('Light') / 'assets'
+        for path in (sorted(assets.glob('*/folder@*.png')) if assets.is_dir() else ()):
+            colours.add(path.stem.split('@', 1)[1])
+    return sorted(colours)
+
+
+def set_folder_colour(colour, system=False, quiet=False):
+    """Recolour every standard folder for this account (or for all users with --system).
+
+    Nothing in the packaged themes is modified: overrides are symbolic links in
+    a directory that icon lookups search first (~/.local/share/icons, or
+    /usr/local/share/icons for all users). "default" removes them.
+    """
+    if system and os.geteuid() != 0:
+        raise SystemExit('--system needs root.')
+    if not system and os.geteuid() == 0:
+        raise SystemExit('Run without sudo for your account, or add --system for all users.')
+    available = folder_colours()
+    if colour != 'default' and colour not in available:
+        raise SystemExit(f'Unknown folder colour "{colour}". Available: default, ' + ', '.join(available))
+    source_root = next((r for r in ICON_ROOTS if (r / theme_name('Light') / 'index.theme').is_file()), None)
+    if source_root is None:
+        raise SystemExit('The Eduka-Icons themes are not installed in /usr/share/icons.')
+    target_root = Path('/usr/local/share/icons') if system else user_dirs()[2] / 'icons'
+    if target_root == source_root:
+        raise SystemExit('The themes are installed in /usr/local/share/icons; use the per-user mode.')
+    for variant in VARIANTS:
+        source = source_root / theme_name(variant)
+        target = target_root / theme_name(variant)
+        if not source.is_dir():
+            continue
+        # Remove earlier overrides (only links that point at Eduka folder assets).
+        if (target / FOLDER_MARK).is_file():
+            for link in target.glob('*/places/*.png'):
+                if link.is_symlink() and '/assets/' in os.readlink(link) and '@' in os.readlink(link):
+                    link.unlink()
+            for folder in sorted(target.glob('*/places'), reverse=True):
+                try: folder.rmdir(); folder.parent.rmdir()
+                except OSError: pass
+            (target / FOLDER_MARK).unlink()
+            try: target.rmdir()
+            except OSError: pass
+        if colour == 'default':
+            continue
+        made = 0
+        for places in sorted(source.glob('*/places')):
+            for entry in places.iterdir():
+                real = Path(os.path.realpath(entry))
+                if real.parent.parent.name != 'assets' or '@' in real.stem:
+                    continue
+                if real.stem != 'folder' and not real.stem.startswith('folder-'):
+                    continue
+                tinted = real.with_name(f'{real.stem}@{colour}.png')
+                if not tinted.is_file():
+                    continue
+                link = target / places.parent.name / 'places' / entry.name
+                link.parent.mkdir(parents=True, exist_ok=True)
+                if link.is_symlink() or link.exists():
+                    link.unlink()
+                link.symlink_to(tinted)
+                made += 1
+        if made:
+            write_text(target / FOLDER_MARK, colour + '\n')
+    if shutil.which('gtk-update-icon-cache'):
+        for variant in VARIANTS:   # a stale cache in the override directory would hide the links
+            cache = target_root / theme_name(variant) / 'icon-theme.cache'
+            if cache.exists(): cache.unlink()
+    log(f'Folder colour: {colour}. Open windows show it after the file manager restarts or a new login.', quiet)
 
 
 # --- installation from a source checkout -------------------------------------
@@ -422,6 +648,10 @@ def main(argv=None):
     parser.add_argument('--watch', action='store_true', help='with --follow-desktop: keep following during the session')
     parser.add_argument('--install', metavar='DIR', type=Path, nargs='?', const=None, default=False,
                         help='copy the built themes (default: ~/.local/share/icons, or /usr/share/icons as root)')
+    parser.add_argument('--folder-colour', '--folder-color', metavar='COLOUR', dest='folder_colour',
+                        help='colour of the standard folders: default, or one of --list-folder-colours')
+    parser.add_argument('--system', action='store_true', help='with --folder-colour: for all users (root)')
+    parser.add_argument('--list-folder-colours', action='store_true', help='print the available folder colours')
     parser.add_argument('--status', action='store_true', help='show installed variants and the current selection')
     parser.add_argument('--quiet', action='store_true')
     args = parser.parse_args(argv)
@@ -429,6 +659,10 @@ def main(argv=None):
     if args.install is not False:
         target = args.install or (Path('/usr/share/icons') if os.geteuid() == 0 else user_dirs()[2] / 'icons')
         install_from_build(target, args.quiet)
+    if args.list_folder_colours:
+        print('default ' + ' '.join(folder_colours()))
+    if args.folder_colour:
+        set_folder_colour(args.folder_colour, args.system, args.quiet)
     if args.reset_system_defaults:
         reset_system(args.quiet)
     if args.status:
@@ -453,7 +687,9 @@ def main(argv=None):
             # An explicit request turns following back on from the current theme.
             state.update(enabled=True, last_applied=current_user_theme())
             write_follow_state(state)
-        follow_once(args.quiet)
+        result = follow_once(args.quiet)
+        if not args.watch and FOLLOW_MESSAGES.get(result):
+            log(FOLLOW_MESSAGES[result], args.quiet)
         if args.watch:
             watch()
     if len(sys.argv if argv is None else argv) <= (0 if argv is not None else 1):

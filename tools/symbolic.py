@@ -6,6 +6,7 @@ Qt, KDE and plain SVG renderers all display the same artwork.
 """
 from html import escape
 import math
+import settings
 from outline import stroke, fill, _disc, _fmt
 
 # Symbolic foreground per theme variant (used by Qt and non-recolouring hosts).
@@ -41,16 +42,14 @@ SEMANTIC = [
 
 
 def hue(kind):
-    for name, prefixes in SEMANTIC:
-        if any(kind == p or kind.startswith(p + '-') or kind.startswith(p) for p in prefixes):
-            return name
+    # Exact names first, then the longest matching word prefix ("bell-off" is rose, "bell" honey).
+    for test in (lambda p: kind == p, lambda p: kind.startswith(p + '-')):
+        found = [(len(p), name) for name, prefixes in SEMANTIC for p in prefixes if test(p)]
+        if found:
+            return max(found)[1]
     return HUES[sum(map(ord, kind)) % len(HUES)]
 
-def S(d, width=2.0): return ('s', d, width)
-def F(d): return ('f', d)
-def C(x, y, r): return ('c', x, y, r)
-def ring(x, y, r): return S(f'M{x + r} {y}A{r} {r} 0 1 0 {x - r} {y}A{r} {r} 0 1 0 {x + r} {y}')
-SLASH = S('M3 3L21 21')
+from glyph_items import S, F, C, ring, SLASH  # noqa: F401
 
 def gear_path(teeth=8, outer=10, inner=7.4, cx=12, cy=12):
     points = []
@@ -261,6 +260,13 @@ BASE = {
     'flip-vertical': [S('M2 12H22'), F('M5 10H19L19 3Z'), S('M5 14H19V21Z')],
     'flask': [S('M9 2H15M10 2V9L4 20Q3.5 22 6 22H18Q20.5 22 20 20L14 9V2M7 15H17')],
 }
+
+# 1.0: pixel-reviewed replacements and additional glyphs.
+from glyph_extra import GLYPHS as _EXTRA_GLYPHS, SYMBOLS as _EXTRA_SYMBOLS  # noqa: E402
+BASE.update(_EXTRA_GLYPHS)
+import glyph_states as _states  # noqa: E402
+BASE.update(_states.GLYPHS)
+BASE.update({kind: [*BASE[base], *extra] for kind, (base, extra) in _states.DERIVED.items()})
 
 # name -> (glyph, aliases, context). Every name also installs <name>-symbolic.
 SYMBOLS = {
@@ -486,6 +492,63 @@ SYMBOLS = {
  'face-worried': ('sad', 'face-angry face-sick face-tired', 'status'),
 }
 
+
+def _merge_symbols(extra):
+    """Names redefined in glyph_extra leave their old entry (so a state gets its own glyph)."""
+    claimed = set()
+    for name, (_, aliases, _) in extra.items():
+        claimed.update((name, *(a.removesuffix('-symbolic') for a in aliases.split())))
+    for name, (kind, aliases, context) in list(SYMBOLS.items()):
+        if name in extra:
+            continue
+        kept = [a for a in aliases.split() if a.removesuffix('-symbolic') not in claimed]
+        if name in claimed and name not in extra:
+            # The old primary name moves: keep the remaining aliases under the first of them.
+            del SYMBOLS[name]
+            if kept:
+                SYMBOLS[kept[0]] = (kind, ' '.join(kept[1:]), context)
+        elif len(kept) != len(aliases.split()):
+            SYMBOLS[name] = (kind, ' '.join(kept), context)
+    SYMBOLS.update(extra)
+
+
+_merge_symbols(_EXTRA_SYMBOLS)
+_merge_symbols(_states.SYMBOLS)
+
+
+def resolve(name):
+    """Glyph kind an icon name is drawn with, or None."""
+    name = name.removesuffix('-symbolic')
+    if name in SYMBOLS:
+        return SYMBOLS[name][0]
+    for kind, aliases, _ in SYMBOLS.values():
+        if name in (a.removesuffix('-symbolic') for a in aliases.split()):
+            return kind
+    return None
+
+
+def check_families():
+    """States of one family must be different drawings."""
+    errors = []
+    seen_names = {}
+    for name, (_, aliases, _) in SYMBOLS.items():
+        for n in (name, *(a.removesuffix('-symbolic') for a in aliases.split())):
+            if n in seen_names and seen_names[n] != name:
+                errors.append(f'{n} is defined by both {seen_names[n]} and {name}')
+            seen_names[n] = name
+    for family in _states.FAMILIES:
+        kinds = {}
+        for name in family:
+            kind = resolve(name)
+            if kind is None:
+                errors.append(f'state {name} has no glyph')
+            elif kind in kinds:
+                errors.append(f'states {kinds[kind]} and {name} share the glyph "{kind}"')
+            else:
+                kinds[kind] = name
+    return errors
+
+
 def glyph_path(kind, weight=1.0):
     parts = []
     for item in BASE[kind]:
@@ -494,12 +557,22 @@ def glyph_path(kind, weight=1.0):
         else: parts.append(_fmt(_disc((item[1], item[2]), item[3], 24)))
     return ''.join(parts)
 
-def svg(kind, variant, title):
-    """Symbolic SVG: one filled path with a two-tone gradient."""
+def svg(kind, variant, title, style=None, weight=None):
+    """Flat glyph SVG: one filled path, so GTK/KDE recolouring keeps the line art.
+
+    style "mono" (default from eduka-icons.toml) uses the variant's foreground
+    colour; "colour" uses a two-tone gradient per glyph family.
+    """
+    glyphs = settings.load()['glyphs']
+    style = style or glyphs['style']
+    if weight is None:
+        weight = glyphs['weight'] * (glyphs['comfort_weight'] if variant == 'Comfort' else 1.0)
+    head = (f'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">'
+            f'<title>{escape(title)}</title>')
+    if style == 'mono':
+        return f'{head}<path d="{glyph_path(kind, weight)}" fill="{glyphs["colour"][variant]}"/></svg>\n'
     top, bottom = PALETTES[variant][hue(kind)]
-    weight = 1.3 if variant == 'Comfort' else 1.0
-    return (f'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">'
-            f'<title>{escape(title)}</title><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">'
+    return (f'{head}<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">'
             f'<stop offset="0" stop-color="{top}"/><stop offset="1" stop-color="{bottom}"/></linearGradient></defs>'
             f'<path d="{glyph_path(kind, weight)}" fill="url(#g)"/></svg>\n')
 

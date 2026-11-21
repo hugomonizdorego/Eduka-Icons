@@ -169,9 +169,9 @@ def folder_kind(name):
 
 CATALOG = {
  'edukasaun': ('book','mint','apps','edukasaun-os eduka-desktop Eduka-Desktop eduka-menu Eduka-Menu eduka-icons eduka-panel Eduka-Panel start-here distributor-logo-debian'),
- 'folder': ('folder','cream','places','folder-green inode-directory folder-open folder-drag-accept folder-visiting folder-new'),
+ 'folder': ('folder','cream','places','folder-green inode-directory'),
  'user-home': ('home','mint','places','folder-home go-home'),
- 'user-trash': ('trash','cream','places','user-trash-full trash-empty trash-full'),
+ 'user-trash': ('trash','cream','places','trash-empty'),
  'folder-documents': ('doc-text','sky','places','folder-documents-green'),
  'folder-download': ('update','mint','places','folder-downloads folder-download-green'),
  'folder-music': ('music','coral','places','folder-music-green'),
@@ -301,10 +301,10 @@ EXTENSIONS = {
  'internet-mail': 'geary org.gnome.Geary kmail org.kde.kmail2 claws-mail sylpheed mailspring betterbird eu.betterbird.Betterbird mail-client',
  'accessories-character-map': 'org.gnome.Characters gnome-characters kcharselect org.kde.kcharselect',
  'x-office-calendar': 'office-calendar evolution-calendar orage appointment-soon appointment-new text-calendar text-x-vcalendar',
- 'applications-education': 'gcompris gcompris-qt org.kde.gcompris scratch scratch-desktop edu.mit.Scratch blinken org.kde.blinken applications-school',
+ 'applications-education': 'education gcompris gcompris-qt org.kde.gcompris scratch scratch-desktop edu.mit.Scratch blinken org.kde.blinken applications-school',
  'applications-science': 'kalzium org.kde.kalzium avogadro chemtool step org.kde.step gnuplot octave org.octave.Octave scilab rstudio jupyter jupyterlab spyder',
  'applications-games': 'gnome-mines org.gnome.Mines gnome-mahjongg aisleriot sol gnome-chess org.gnome.Chess kpat kmines ksudoku supertux supertuxkart 0ad minetest net.minetest.Minetest steam com.valvesoftware.Steam lutris retroarch input-gaming',
- 'applications-development': 'geany org.geany.Geany vscode com.visualstudio.code code codium com.vscodium.codium sublime-text thonny org.thonny.Thonny bluefish idle idle3 qtcreator org.qt-project.qtcreator kdevelop org.kde.kdevelop codeblocks lazarus arduino arduino-ide cc.arduino.IDE2 eclipse netbeans pycharm-community android-studio gitg org.gnome.gitg git-cola meld org.gnome.Meld ghex org.gnome.GHex okteta applications-engineering',
+ 'applications-development': 'development geany org.geany.Geany vscode com.visualstudio.code code codium com.vscodium.codium sublime-text thonny org.thonny.Thonny bluefish idle idle3 qtcreator org.qt-project.qtcreator kdevelop org.kde.kdevelop codeblocks lazarus arduino arduino-ide cc.arduino.IDE2 eclipse netbeans pycharm-community android-studio gitg org.gnome.gitg git-cola meld org.gnome.Meld ghex org.gnome.GHex okteta applications-engineering',
  'computer': 'hardinfo hardinfo2 cpu-x kinfocenter org.kde.kinfocenter preferences-desktop-display lxqt-config-monitor arandr display-settings xfce-display-settings preferences-desktop-screensaver',
  'computer-laptop': 'virtualbox VirtualBox virt-manager gnome-boxes org.gnome.Boxes qemu remmina org.remmina.Remmina krdc org.kde.krdc rustdesk anydesk teamviewer x2goclient vmplayer',
  'drive-harddisk': 'org.gnome.DiskUtility gnome-disks gparted partitionmanager org.kde.partitionmanager baobab org.gnome.baobab filelight qdirstat deja-dup org.gnome.DejaDup timeshift backintime drive-multidisk',
@@ -332,6 +332,8 @@ EXTENSIONS = {
  'system-lock-screen': 'lxqt-lockscreen xscreensaver light-locker',
  'system-shutdown': 'lxqt-leave lxqt-shutdown gnome-session-halt xfsm-shutdown system-shutdown-panel',
  'eduka-lafa': 'applications-other',
+ 'application-x-executable': 'exec',
+ 'applications-graphics': 'graphics',
 }
 for _name, _extra in EXTENSIONS.items():
     _extend(_name, _extra)
@@ -347,7 +349,7 @@ NEW_ENTRIES = {
  'preferences-system-time': ('clock-settings','teal','apps','preferences-system-date-time lxqt-admin-time'),
  'system-run': ('rocket','lavender','apps','gnome-run lxqt-runner krunner org.kde.krunner xfce4-appfinder'),
  'system-users': ('users','coral','apps','users lxqt-admin-user user-admin gnome-user-accounts preferences-system-users org.gnome.Settings-users system-switch-user'),
- 'preferences-desktop-locale': ('globe','sky','apps','lxqt-config-locale config-language locale org.gnome.Settings-region applications-geography kgeography org.kde.kgeography marble org.kde.marble stellarium celestia org.gnome.Maps gnome-maps applications-astronomy eduka-language-pack-tet'),
+ 'preferences-desktop-locale': ('globe','sky','apps','globe lxqt-config-locale config-language locale org.gnome.Settings-region applications-geography kgeography org.kde.kgeography marble org.kde.marble stellarium celestia org.gnome.Maps gnome-maps applications-astronomy eduka-language-pack-tet'),
  'preferences-desktop-sound': ('volume','teal','apps','pavucontrol pavucontrol-qt org.pulseaudio.pavucontrol multimedia-volume-control audio-volume-control lxqt-config-sound gnome-sound-properties'),
  'preferences-system-notifications': ('bell','honey','apps','lxqt-config-notificationd lxqt-notificationd notification-area preferences-desktop-notification notification'),
  'preferences-desktop-theme': ('palette','peach','apps','lxqt-config-appearance preferences-desktop-appearance preferences-desktop-color gnome-tweaks org.gnome.tweaks lxappearance qt5ct qt6ct kvantum kvantummanager'),
@@ -368,9 +370,28 @@ NEW_ENTRIES = {
  'x-office-address-book': ('users','coral','apps','org.gnome.Contacts gnome-contacts kaddressbook contacts text-x-vcard'),
  'graphics-editor': ('paint','honey','apps','gimp org.gimp.GIMP inkscape org.inkscape.Inkscape krita org.kde.krita mypaint org.mypaint.MyPaint pinta com.github.PintaProject.Pinta kolourpaint org.kde.kolourpaint drawing com.github.maoschanz.drawing tuxpaint darktable rawtherapee blender scribus applications-painting'),
  'multimedia-video-editor': ('video','coral','apps','kdenlive org.kde.kdenlive openshot org.openshot.OpenShot shotcut org.shotcut.Shotcut pitivi flowblade obs com.obsproject.Studio simplescreenrecorder vokoscreenNG kazam peek handbrake fr.handbrake.ghb'),
- 'folder-desktop': ('folder-desktop','cream','places','user-desktop user-desktop-folder'),
- 'folder-git': ('folder-git','cream','places','folder-development folder-code'),
- 'folder-remote': ('folder-cloud','cream','places','folder-cloud folder-network network-server-folder folder-remote-ftp'),
+ 'folder-favorites': ('folder-favorites','cream','places','folder-bookmark folder-bookmarks folder-starred folder-favourites'),
+ 'folder-games': ('folder-games','cream','places','folder-game folder-steam folder-lutris'),
+ 'folder-recent': ('folder-recent','cream','places','folder-open-recent folder-temp folder-history folder-activities'),
+ 'folder-backup': ('folder-backup','cream','places','folder-backups folder-sync folder-timeshift folder-syncthing'),
+ 'folder-code': ('folder-code','cream','places','folder-development folder-script folder-scripts folder-src folder-projects folder-project'),
+ 'folder-books': ('folder-books','cream','places','folder-book folder-library folder-ebooks folder-education folder-school folder-notes'),
+ 'folder-camera': ('folder-camera','cream','places','folder-dcim folder-screenshots folder-photo folder-photos folder-images'),
+ 'folder-mail': ('folder-mail','cream','places','folder-email folder-inbox'),
+ 'folder-print': ('folder-print','cream','places','folder-printer folder-scans'),
+ 'folder-important': ('folder-important','cream','places','folder-warning'),
+ 'folder-network': ('folder-network','cream','places','network-server-folder folder-nfs folder-smb folder-html'),
+ 'folder-root': ('folder-root','cream','places','folder-system folder-config folder-settings folder-etc'),
+ 'folder-dropbox': ('folder-box','cream','places','folder-box folder-archive folder-tar'),
+ 'folder-android': ('folder-phone','cream','places','folder-phone folder-mobile folder-kdeconnect'),
+ 'folder-apps': ('folder-apps','cream','places','folder-applications folder-wine folder-appimage folder-flatpak folder-snap folder-programs folder-vbox'),
+ 'user-trash-full': ('trash-full','cream','places','trash-full'),
+ 'folder-open': ('folder-open','cream','places','folder-visiting document-open-folder'),
+ 'folder-drag-accept': ('folder-accept','cream','places',''),
+ 'folder-new': ('folder-new','cream','places','folder-add'),
+ 'folder-desktop': ('folder-desktop','cream','places','user-desktop user-desktop-folder desktop'),
+ 'folder-git': ('folder-git','cream','places','folder-github folder-gitlab folder-vcs'),
+ 'folder-remote': ('folder-cloud','cream','places','folder-cloud folder-remote-ftp folder-nextcloud folder-owncloud folder-onedrive folder-google-drive folder-gdrive folder-yandex-disk folder-mega folder-pcloud'),
  'folder-locked': ('folder-lock','cream','places','folder-lock folder-private'),
  'folder-text': ('folder-text','cream','places','folder-documents-open'),
 }
@@ -385,3 +406,109 @@ def duplicates():
         for other in {name, *names.split()}:
             owners.setdefault(other, []).append(name)
     return {n: o for n, o in owners.items() if len(o) > 1}
+
+
+# ---------------------------------------------------------------------------
+# 1.0: detailed artwork (tools/art/*.py). Different names no longer share a
+# drawing: office family, suite launchers, file sheets, more devices.
+# ---------------------------------------------------------------------------
+REKIND = {
+    'libreoffice-writer': 'doc-writer', 'libreoffice-draw': 'doc-draw', 'libreoffice-math': 'doc-math',
+    'libreoffice-startcenter': 'office-suite', 'accessories-character-map': 'charmap',
+    'accessories-text-editor': 'editor', 'image-x-generic': 'doc-image', 'audio-x-generic': 'doc-audio',
+    'video-x-generic': 'doc-video', 'text-x-script': 'script', 'application-x-executable': 'executable',
+    'system-reboot': 'reboot', 'x-office-address-book': 'contacts', 'multimedia-video-editor': 'video-editor',
+    'preferences-desktop-theme': 'theme', 'applications-system': 'tools', 'application-x-deb': 'package',
+    'cheese': 'webcam', 'accessories-dictionary': 'dictionary', 'edukasaun-welcome': 'eduka-welcome',
+}
+ENTRIES_1_0 = {
+ # Eduka-Desktop suite
+ 'eduka-menu': ('eduka-menu', 'apps', 'Eduka-Menu eduka-menu-daemon'),
+ 'eduka-panel': ('eduka-panel', 'apps', 'Eduka-Panel'),
+ 'eduka-settings': ('eduka-settings', 'apps', 'Eduka-Settings eduka-menu-settings Eduka-Menu-Settings'),
+ 'eduka-about': ('eduka-about', 'apps', 'Eduka-About'),
+ 'eduka-desktop': ('eduka-desktop', 'apps', 'Eduka-Desktop edukasaun-desktop eduka-desktop-session edukasaun-desktop-menu-open'),
+ 'eduka-session-action': ('eduka-session', 'apps', 'eduka-session Eduka-Session'),
+ 'applications-all': ('eduka-appstore-tile', 'categories', 'view-app-grid application-menu'),
+ # Applications and settings
+ 'archive-manager': ('archive-box', 'apps', 'utilities-file-archiver'),
+ 'security-high': ('shield-check', 'status', 'security-medium'),
+ 'accessories-clipboard': ('clipboard', 'apps', 'clipman xfce4-clipman klipper diodon parcellite copyq'),
+ 'accessories-maps': ('maps', 'apps', 'maps applications-geography'),
+ 'preferences-desktop-translation': ('translate', 'apps', 'config-language applications-education-language translate'),
+ 'applets-screenshooter': ('screenshot', 'apps', 'accessories-screenshot'),
+ 'preferences-desktop-remote-desktop': ('remote-desktop', 'apps', 'remote-desktop applications-remote-desktop'),
+ 'applications-virtualization': ('virtual-machine', 'apps', 'virtual-machine'),
+ 'disk-usage-analyzer': ('disk-usage', 'apps', 'utilities-disk-usage'),
+ 'utilities-backup': ('backup', 'apps', 'backup'),
+ 'usb-creator': ('bootable-usb', 'apps', 'usb-creator-gtk bootable-media-creator'),
+ 'applications-video': ('film', 'categories', 'applications-multimedia-video'),
+ 'software-store-updates': ('store-bag-download', 'apps', 'software-update update-notifier'),
+ # File types
+ 'unknown': ('blank-file', 'mimetypes', 'application-octet-stream application-x-generic application-x-object application-x-core application-x-zerosize application-x-trash empty'),
+ 'inode-symlink': ('symlink-file', 'mimetypes', ''),
+ 'inode-blockdevice': ('device-file', 'mimetypes', 'inode-chardevice'),
+ 'inode-fifo': ('pipe-file', 'mimetypes', ''),
+ 'inode-socket': ('socket-file', 'mimetypes', ''),
+ 'application-certificate': ('certificate-file', 'mimetypes', 'application-x-x509-ca-cert application-x-pkcs12 application-pkix-cert application-x-pkcs7-certificates application-x-pem-file'),
+ 'application-pgp-keys': ('key-file', 'mimetypes', 'application-pgp application-pgp-encrypted application-pgp-signature application-x-pem-key'),
+ 'text-x-generic-template': ('template-file', 'mimetypes', 'x-office-document-template application-x-template'),
+ 'text-x-log': ('log-file', 'mimetypes', 'text-x-changelog'),
+ 'text-x-config': ('config-file', 'mimetypes', 'text-x-ini application-toml application-x-yaml text-x-systemd-unit application-x-desktop-config'),
+ 'application-x-sqlite3': ('database-file', 'mimetypes', 'application-sql text-x-sql application-vnd.oasis.opendocument.database application-x-sqlite2 libreoffice-oasis-database'),
+ 'application-epub+zip': ('ebook-file', 'mimetypes', 'application-x-mobipocket-ebook application-x-fictionbook+xml'),
+ 'font-x-generic': ('font-file', 'mimetypes', 'application-x-font-ttf font-ttf application-x-font-otf font-otf font-woff application-x-font-type1'),
+ 'application-x-cd-image': ('disk-image-file', 'mimetypes', 'application-x-iso9660-image application-x-raw-disk-image'),
+ 'application-x-virtualbox-vdi': ('virtual-disk-file', 'mimetypes', 'application-x-qemu-disk application-x-vmdk-disk application-x-virtualbox-vmdk'),
+ 'application-x-bittorrent': ('torrent-file', 'mimetypes', ''),
+ 'text-calendar': ('calendar-file', 'mimetypes', 'text-x-vcalendar'),
+ 'text-x-vcard': ('contact-file', 'mimetypes', 'text-vcard'),
+ 'text-html': ('web-file', 'mimetypes', 'application-xhtml+xml'),
+ 'text-xml': ('xml-file', 'mimetypes', 'application-xml'),
+ 'application-x-subrip': ('subtitles-file', 'mimetypes', 'text-x-ssa text-x-subviewer text-vtt'),
+ 'text-x-patch': ('patch-file', 'mimetypes', 'text-x-diff'),
+ 'audio-x-mpegurl': ('playlist-file', 'mimetypes', 'audio-x-scpls application-vnd.apple.mpegurl audio-x-ms-asx'),
+ 'libreoffice-base': ('doc-base', 'apps', ''),
+ # Devices
+ 'tablet': ('tablet', 'devices', 'computer-tablet'),
+ 'scanner': ('scanner', 'devices', ''),
+ 'camera-web': ('webcam', 'devices', 'webcam camera-webcam'),
+ 'video-television': ('television', 'devices', 'tv'),
+ 'multimedia-player': ('media-player', 'devices', 'multimedia-player-apple-ipod gnome-dev-ipod'),
+ 'network-modem': ('router', 'devices', 'network-router modem network-wireless-router'),
+ 'cpu': ('chip', 'devices', 'device-cpu'),
+ 'media-memory': ('memory', 'devices', 'gnome-dev-memory'),
+ 'media-flash': ('sdcard', 'devices', 'media-flash-sd-mmc media-flash-memory-stick'),
+ 'media-floppy': ('floppy', 'devices', ''),
+ 'camera-video': ('camcorder', 'devices', ''),
+ 'audio-speakers': ('speaker', 'devices', 'audio-card'),
+ 'uninterruptible-power-supply': ('ups', 'devices', 'battery-ups'),
+ 'input-joystick': ('joystick', 'devices', 'joystick'),
+ 'video-projector': ('projector', 'devices', 'projector'),
+ 'smartwatch': ('smartwatch', 'devices', 'watch'),
+ 'input-tablet': ('drawing-tablet', 'devices', 'drawing-tablet'),
+ 'network-card': ('network-card', 'devices', ''),
+}
+# Names listed above always use Eduka artwork, even when the upstream catalog has its own.
+FORCED = set()
+
+
+def _apply_1_0():
+    for main, kind in REKIND.items():
+        _, colour, context, names = CATALOG[main]
+        CATALOG[main] = (kind, colour, context, names)
+    for main, (kind, context, names) in ENTRIES_1_0.items():
+        claimed = {main, *names.split()}
+        FORCED.update(claimed)
+        merged = names
+        if main in CATALOG:                       # replaces an older, simpler entry of the same name
+            merged = ' '.join(dict.fromkeys((names + ' ' + CATALOG[main][3]).split()))
+            del CATALOG[main]
+        for other, (k, colour, c, aliases) in list(CATALOG.items()):
+            kept = [a for a in aliases.split() if a not in claimed]
+            if len(kept) != len(aliases.split()):
+                CATALOG[other] = (k, colour, c, ' '.join(kept))
+        CATALOG[main] = (kind, 'cream', context, merged)
+
+
+_apply_1_0()

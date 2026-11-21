@@ -9,6 +9,7 @@ build:
 	$(PYTHON) tools/build_apps.py
 
 test:
+	$(PYTHON) tools/test_tools.py
 	$(PYTHON) tools/check_source.py
 	$(PYTHON) tools/validate.py
 	$(PYTHON) tools/coverage.py

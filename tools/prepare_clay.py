@@ -5,12 +5,12 @@ import json
 import shutil
 from PIL import Image
 from artwork import CATALOG
-from clay import ASSETS, ROOT, KIND_ASSET, source_for, vector, folder_svg, encoded
+from clay import ASSETS, ROOT, KIND_ASSET, OVERLAYS, source_for, vector, folder_svg, overlay_svg, encoded
 from render import render
 
 def prepare():
     ASSETS.mkdir(parents=True, exist_ok=True)
-    compositions = ROOT / 'build/compositions'
+    compositions = ASSETS.parent / 'compositions'
     compositions.mkdir(parents=True, exist_ok=True)
     metadata = json.loads((ROOT / 'assets/generated.json').read_text())
     generated = set(metadata['generated_assets'])
@@ -22,12 +22,14 @@ def prepare():
             image.convert('RGBA').save(ASSETS / (record['name'] + '.png'))
     encoded.cache_clear()
     required = {source_for(name, kind) for name, (kind, _, _, _) in CATALOG.items()}
-    required.update('folder-' + k for k in ('plain', 'home', 'download', 'music',
-                    'pictures', 'video', 'share', 'lock', 'templates', 'git', 'cloud', 'text',
-                    'desktop'))
-    for name in sorted(required):
+    required.add('folder-plain')
+    # Overlays are composed on finished masters, so they are rendered last.
+    for name in sorted(required, key=lambda n: (n in OVERLAYS, n)):
         destination = ASSETS / (name + '.png')
-        if name.startswith('folder-'):
+        if name in OVERLAYS:
+            encoded.cache_clear()
+            data = overlay_svg(name)
+        elif name.startswith('folder-'):
             if name == 'folder-plain':
                 shutil.copyfile(ASSETS / 'folder.png', destination)
                 continue
@@ -38,6 +40,8 @@ def prepare():
             kind = next((k for k, v in KIND_ASSET.items() if v == name), name)
             data = vector(kind)
         source = compositions / (name + '.svg')
+        if destination.exists() and source.exists() and source.read_text() == data:
+            continue                       # unchanged composition: keep the rendered master
         source.write_text(data)
         render(source, 1024, destination)
     encoded.cache_clear()

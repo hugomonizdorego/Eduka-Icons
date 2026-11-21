@@ -8,9 +8,14 @@ import ctypes.util
 from pathlib import Path
 
 NAMES = ('folder', 'user-home', 'system-file-manager', 'internet-web-browser', 'eduka-konekta', 'libreoffice-writer',
-         'preferences-desktop-locale', 'utilities-system-monitor', 'help-about', 'face-smile',
-         'network-wireless-signal-excellent', 'battery-full-symbolic')
-SYMBOLIC = ('network-wireless-signal-excellent-symbolic', 'emblem-ok-symbolic', 'window-close-symbolic',
+         'preferences-desktop-locale', 'utilities-system-monitor', 'help-about', 'face-smile')
+# Tray-type names: flat glyph up to 24 px (also on HiDPI), clay artwork from 32 px.
+TRAY = ('bluetooth', 'battery', 'network-wireless', 'system-shutdown')
+# Always-flat panel/toolbar names (Eduka line glyphs) and upstream flat names.
+FLAT = ('audio-volume-high', 'network-wireless-signal-excellent', 'battery-good-charging', 'edit-copy',
+        'view-refresh', 'window-close')
+UPSTREAM_FLAT = ('nm-signal-100', 'nm-device-wired', 'package-install', 'emblem-dropbox-syncing')
+SYMBOLIC = ('battery-full-symbolic', 'network-wireless-signal-excellent-symbolic', 'emblem-ok-symbolic', 'window-close-symbolic',
             'pan-down-symbolic', 'system-shutdown-symbolic', 'go-next-symbolic', 'edit-copy-symbolic')
 
 
@@ -76,14 +81,15 @@ def check(base, variants=('Light', 'Dark', 'Bright', 'Comfort')):
         gtk.gtk_icon_theme_set_custom_theme(theme, f'Eduka-Icons-{variant}'.encode())
         try:
             for name in NAMES:
-                for size, scale in ((16, 1), (48, 1), (22, 2), (48, 2), (128, 2), (256, 2)):
+                for size, scale in ((16, 1), (22, 1), (24, 1), (32, 1), (48, 1), (64, 1), (96, 1), (128, 1), (256, 1),
+                                    (512, 1), (16, 2), (22, 2), (24, 2), (48, 2), (128, 2), (256, 2)):
                     # FORCE_SIZE requests exact physical pixels for this check.
                     info = gtk.gtk_icon_theme_lookup_icon_for_scale(theme, name.encode(), size, scale, 1 << 4)
                     assert info, f'GTK lookup missing: {variant} {name} {size}@{scale}'
                     try:
                         filename = gtk.gtk_icon_info_get_filename(info).decode()
                         assert Path(filename).resolve().is_relative_to(root / f'Eduka-Icons-{variant}'), filename
-                        if scale == 2 and filename.endswith('.png'): assert '@2x' in filename, filename
+                        if scale == 2 and filename.endswith('.png') and size * 2 <= 512: assert '@2x' in filename, filename
                         pixbuf = gtk.gtk_icon_info_load_icon(info, None)
                         assert pixbuf, filename
                         try:
@@ -93,6 +99,33 @@ def check(base, variants=('Light', 'Dark', 'Bright', 'Comfort')):
                         rows.append({'variant': variant, 'name': name, 'size': size, 'scale': scale,
                                      'file': str(Path(filename).relative_to(root))})
                     finally: objects.g_object_unref(info)
+            own = root / f'Eduka-Icons-{variant}'
+
+            def found(name, size, scale=1):
+                info = gtk.gtk_icon_theme_lookup_icon_for_scale(theme, name.encode(), size, scale, 0)
+                assert info, f'GTK lookup missing: {variant} {name} {size}@{scale}'
+                try: return Path(gtk.gtk_icon_info_get_filename(info).decode())
+                finally: objects.g_object_unref(info)
+
+            for name in TRAY:
+                for size, scale in ((16, 1), (22, 1), (24, 1), (16, 2), (22, 2), (24, 2)):
+                    path = found(name, size, scale)
+                    assert path.suffix == '.svg' and path.is_relative_to(own), (variant, name, size, scale, path)
+                for size in (32, 48, 128):
+                    path = found(name, size)
+                    assert path.suffix == '.png' and path.is_relative_to(own), (variant, name, size, path)
+                rows.append({'variant': variant, 'name': name, 'tray': 'flat<=24, clay>=32'})
+            for name in FLAT:
+                for size, scale in ((16, 1), (22, 1), (24, 1), (32, 1), (48, 1), (22, 2)):
+                    path = found(name, size, scale)
+                    assert path.suffix == '.svg' and path.is_relative_to(own), (variant, name, size, scale, path)
+                rows.append({'variant': variant, 'name': name, 'flat': 'ok'})
+            if (own / 'flat/24/panel').is_dir():
+                for name in UPSTREAM_FLAT:
+                    for size in (16, 22, 24, 48):
+                        path = found(name, size)
+                        assert path.suffix == '.svg' and path.is_relative_to(own), (variant, name, size, path)
+                    rows.append({'variant': variant, 'name': name, 'upstream_flat': 'ok'})
             apps_theme = root / ('Eduka-Icons-Apps-Comfort' if variant == 'Comfort' else 'Eduka-Icons-Apps')
             seen = {}
             for name in APPS:
@@ -126,4 +159,33 @@ def check(base, variants=('Light', 'Dark', 'Bright', 'Comfort')):
                     rows.append({'variant': variant, 'name': name, 'symbolic_recolour': 'ok'})
                 finally: objects.g_object_unref(info)
         finally: objects.g_object_unref(theme)
+    rows.append(_hicolor_regression(gtk, objects, root, variants))
     return {'status': 'passed', 'checked': len(rows), 'lookups': rows}
+
+
+def _hicolor_regression(gtk, objects, root, variants):
+    """An application's own hicolor icon must never win over the Eduka catalog icon."""
+    import tempfile
+    from PIL import Image
+    with tempfile.TemporaryDirectory() as directory:
+        hicolor = Path(directory) / 'hicolor'
+        (hicolor / '48x48/apps').mkdir(parents=True)
+        (hicolor / 'index.theme').write_text('[Icon Theme]\nName=Hicolor\nDirectories=48x48/apps\n\n'
+                                             '[48x48/apps]\nSize=48\nContext=Applications\nType=Fixed\n')
+        for name in ('firefox', 'gimp'):
+            Image.new('RGBA', (48, 48), (255, 0, 0, 255)).save(hicolor / '48x48/apps' / f'{name}.png')
+        for variant in variants:
+            theme = gtk.gtk_icon_theme_new()
+            paths = (C.c_char_p * 2)(str(root).encode(), directory.encode())
+            gtk.gtk_icon_theme_set_search_path(theme, paths, 2)
+            gtk.gtk_icon_theme_set_custom_theme(theme, f'Eduka-Icons-{variant}'.encode())
+            try:
+                for name in ('firefox', 'gimp'):
+                    info = gtk.gtk_icon_theme_lookup_icon_for_scale(theme, name.encode(), 48, 1, 0)
+                    assert info, name
+                    try:
+                        filename = gtk.gtk_icon_info_get_filename(info).decode()
+                        assert 'Eduka-Icons-Apps' in filename, f'{variant}: {name} resolved to {filename}'
+                    finally: objects.g_object_unref(info)
+            finally: objects.g_object_unref(theme)
+    return {'hicolor_regression': 'ok'}

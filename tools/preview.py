@@ -7,14 +7,17 @@
 * variants.png            - Light, Dark and Bright side by side
 """
 import argparse
+import sys
 from pathlib import Path
 import tempfile
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 from render import render
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from settings import BUILD  # noqa: E402
 VERSION = (ROOT / 'VERSION').read_text().strip()
-OUT = ROOT / 'build/screenshots'
+OUT = BUILD / 'screenshots'
 # Background, surface, text colour and accent per variant, after the Eduka-Desktop themes.
 LOOK = {
     'Light': {'bg': ('#e9efe9', '#cfe2d8'), 'surface': '#fbfaf6', 'text': '#2f3a33', 'muted': '#6b776e',
@@ -80,18 +83,33 @@ def gradient(size, top, bottom):
 
 
 def theme_dir(variant):
-    return ROOT / f'build/themes/Eduka-Icons-{variant}'
+    return BUILD / f'themes/Eduka-Icons-{variant}'
+
+
+def _svg(path, size):
+    with tempfile.TemporaryDirectory() as directory:
+        target = Path(directory) / 'icon.png'
+        render(path, size, target)
+        with Image.open(target) as image:
+            return image.convert('RGBA')
 
 
 def icon(variant, name, size):
-    apps = ROOT / 'build/themes' / ('Eduka-Icons-Apps-Comfort' if variant == 'Comfort' else 'Eduka-Icons-Apps')
-    candidates = [*sorted(theme_dir(variant).glob('256x256/*')), *sorted(theme_dir(variant).glob('512x512/*')),
-                  *apps.glob('128x128/apps')]
+    """The file a desktop would show for this name at this size (clay PNG or flat SVG)."""
+    theme = theme_dir(variant)
+    apps = BUILD / 'themes' / ('Eduka-Icons-Apps-Comfort' if variant == 'Comfort' else 'Eduka-Icons-Apps')
+    if size <= 24:
+        for path in theme.glob(f'flat/small/*/{name}.svg'):
+            return _svg(path, size)
+    candidates = [*sorted(theme.glob('256x256/*')), *sorted(theme.glob('512x512/*')), *sorted(apps.glob('128x128/*'))]
     for directory in candidates:
         path = directory / (name + '.png')
         if path.exists():
             with Image.open(path) as image:
                 return image.convert('RGBA').resize((size, size), Image.Resampling.LANCZOS)
+    for pattern in ('scalable/*', 'flat/24/*', 'flat/22/*', 'flat/16/*', 'symbolic/*'):
+        for path in theme.glob(f'{pattern}/{name}.svg'):
+            return _svg(path, size)
     raise FileNotFoundError(name)
 
 
@@ -112,23 +130,114 @@ def apps_sheet(variant):
     return canvas
 
 
+TRAY_NAMES = ('network-wireless-signal-excellent', 'network-wireless-signal-ok', 'network-wired', 'bluetooth',
+              'audio-volume-high', 'audio-volume-muted', 'microphone-sensitivity-high', 'battery-full-charging',
+              'battery-low', 'display-brightness', 'night-light', 'notification-active', 'airplane-mode',
+              'system-lock-screen', 'system-reboot', 'system-shutdown', 'nm-signal-75', 'nm-device-wired',
+              'blueman-active', 'package-install')
+TOOLBAR_NAMES = ('go-previous', 'go-next', 'go-up', 'go-home', 'view-refresh', 'document-new', 'document-open',
+                 'document-save', 'document-print', 'edit-undo', 'edit-redo', 'edit-cut', 'edit-copy', 'edit-paste',
+                 'edit-delete', 'edit-find', 'zoom-in', 'zoom-out', 'view-fullscreen', 'list-add', 'list-remove',
+                 'media-playback-start', 'media-playback-pause', 'starred', 'open-menu', 'window-close')
+
+
+def _row(canvas, variant, names, size, x, y, step):
+    for index, name in enumerate(names):
+        try:
+            canvas.alpha_composite(icon(variant, name, size), (x + index * step, y))
+        except (FileNotFoundError, StopIteration):
+            pass
+
+
 def panel_sheet(temporary):
-    """Colourful clay panel icons and two-tone symbolic icons."""
-    names = ('network-wireless-signal-excellent', 'bluetooth-active', 'audio-volume-high', 'battery-full-charging',
-             'display-brightness', 'notification-active', 'system-shutdown', 'system-reboot', 'system-lock-screen',
-             'edit-copy', 'edit-paste', 'edit-undo', 'document-save', 'document-open', 'list-add', 'go-next',
-             'view-refresh', 'zoom-in', 'media-playback-start', 'starred', 'dialog-warning', 'night-light')
-    canvas = Image.new('RGBA', (1600, 760), '#f4f1ea')
+    """Normal flat tray, panel and toolbar icons at their real pixel sizes."""
+    canvas = Image.new('RGBA', (1600, 900), '#f4f1ea')
     draw = ImageDraw.Draw(canvas)
-    draw.rectangle((0, 380, 1600, 760), fill='#262b27')
-    for half, (variant, color) in enumerate((('Light', '#2f3a33'), ('Dark', '#f1ece2'))):
-        top = half * 380
-        draw.text((40, top + 24), f'Clay panel icons · {variant}', font=font(22, True), fill=color)
-        for i, name in enumerate(names):
-            canvas.alpha_composite(icon(variant, name, 52), (40 + i * 70, top + 70))
-        draw.text((40, top + 160), 'Symbolic icons (two-tone; GTK and KDE recolour them automatically)', font=font(18), fill=color)
-        for i, name in enumerate(names):
-            canvas.alpha_composite(glyph(variant, name, 32, temporary), (50 + i * 70, top + 210))
+    draw.rectangle((0, 450, 1600, 900), fill='#262b27')
+    for half, (variant, color, bar) in enumerate((('Light', '#2f3a33', '#fbfaf6'), ('Dark', '#f1ece2', '#33383a'))):
+        top = half * 450
+        draw.text((40, top + 22), f'System tray, panel and toolbar icons · Eduka-Icons-{variant}', font=font(24, True), fill=color)
+        draw.text((40, top + 58), 'Flat, one colour, pixel-reviewed at 16, 22 and 24 px (shown at real size and 2x). Clay artwork starts at 32 px.',
+                  font=font(16), fill=color)
+        for row, size in enumerate((16, 22, 24)):
+            y = top + 96 + row * 44
+            draw.rounded_rectangle((36, y - 6, 1564, y + size + 6), 10, fill=bar)
+            draw.text((48, y + size / 2 - 8), f'{size}', font=font(13), fill=color)
+            _row(canvas, variant, TRAY_NAMES + TOOLBAR_NAMES[:20], size, 84, y, 36)
+        y = top + 246
+        draw.rounded_rectangle((36, y - 8, 1564, y + 56), 14, fill=bar)
+        _row(canvas, variant, TRAY_NAMES + TOOLBAR_NAMES[:5], 48, 52, y, 60)
+        y = top + 330
+        draw.text((40, y), 'The same names from 32 px up use clay artwork (dialogs, launchers, settings):', font=font(16), fill=color)
+        _row(canvas, variant, ('bluetooth', 'battery', 'network-wireless', 'system-shutdown', 'system-reboot',
+                               'system-lock-screen', 'system-log-out', 'system-suspend', 'audio-input-microphone',
+                               'preferences-system-notifications', 'dialog-warning', 'dialog-error',
+                               'dialog-information', 'help-browser'), 64, 44, y + 30, 84)
+    return canvas
+
+
+def folders_sheet():
+    """Folder colours selectable with eduka-icons-select --folder-colour."""
+    import settings
+    colours = settings.load()['folders']['colours']
+    kinds = ('folder', 'folder-documents', 'folder-download', 'folder-music', 'folder-pictures', 'folder-videos')
+    look = LOOK['Light']
+    canvas = gradient((1600, 150 + len(colours) * 118), *look['bg']).convert('RGBA')
+    draw = ImageDraw.Draw(canvas)
+    draw.text((56, 36), 'Folder colours · eduka-icons-select --folder-colour <name>', font=font(34, True), fill=look['text'])
+    default = settings.load()['folders']['default']
+    for row, colour in enumerate(colours):
+        y = 120 + row * 118
+        draw.text((60, y + 38), colour + (' (default)' if colour == default else ''), font=font(22, True), fill=look['text'])
+        for column, kind in enumerate(kinds):
+            name = kind if colour == default else kind.replace('folder', f'folder-{colour}', 1)
+            canvas.alpha_composite(icon('Light', name, 104), (300 + column * 150, y))
+        for column, size in enumerate((48, 32, 24, 16)):
+            name = 'folder' if colour == default else f'folder-{colour}'
+            canvas.alpha_composite(icon('Light', name, size), (1240 + column * 70, y + 52 - size // 2))
+    return canvas
+
+
+def artwork_sheet(variant='Light'):
+    """Every Eduka-drawn clay artwork of a variant."""
+    look = LOOK[variant]
+    assets = sorted(p for p in (theme_dir(variant) / 'assets/256').glob('*.png') if '@' not in p.stem)
+    cols = 14
+    rows = (len(assets) + cols - 1) // cols
+    canvas = gradient((1600, 150 + rows * 112), *look['bg']).convert('RGBA')
+    draw = ImageDraw.Draw(canvas)
+    draw.text((56, 36), f'{len(assets)} Eduka clay artworks · Eduka-Icons-{variant}', font=font(34, True), fill=look['text'])
+    for index, path in enumerate(assets):
+        with Image.open(path) as image:
+            image = image.convert('RGBA').resize((96, 96), Image.Resampling.LANCZOS)
+        canvas.alpha_composite(image, (50 + (index % cols) * 108, 120 + (index // cols) * 112))
+    return canvas
+
+
+def types_sheet(variant='Light'):
+    """File types and devices from the shared catalog."""
+    look = LOOK[variant]
+    names = ('text-x-generic', 'text-x-python', 'text-x-csrc', 'text-html', 'text-css', 'application-json',
+             'application-x-shellscript', 'text-markdown', 'application-pdf', 'application-epub+zip',
+             'application-msword', 'application-vnd.ms-excel', 'application-vnd.ms-powerpoint',
+             'application-vnd.oasis.opendocument.text', 'application-zip', 'application-x-7z-compressed',
+             'application-x-deb', 'application-x-rpm', 'application-x-iso', 'application-x-executable',
+             'image-x-generic', 'image-svg+xml', 'image-x-xcf', 'audio-x-generic', 'audio-midi', 'video-x-generic',
+             'font-x-generic', 'application-x-sqlite3', 'application-x-java', 'text-x-sql', 'application-x-blender',
+             'application-pgp-keys', 'computer', 'computer-laptop', 'drive-harddisk', 'drive-removable-media',
+             'media-optical', 'printer', 'scanner', 'input-keyboard', 'input-mouse', 'input-gaming', 'input-tablet',
+             'audio-headphones', 'audio-input-microphone', 'camera-photo', 'camera-web', 'phone', 'tablet',
+             'multimedia-player', 'network-wireless', 'bluetooth', 'battery', 'video-display', 'tv', 'smartwatch')
+    cols = 14
+    canvas = gradient((1600, 170 + ((len(names) + cols - 1) // cols) * 116), *look['bg']).convert('RGBA')
+    draw = ImageDraw.Draw(canvas)
+    draw.text((56, 36), f'File types and devices · Eduka-Icons-{variant}', font=font(34, True), fill=look['text'])
+    shown = 0
+    for name in names:
+        try: image = icon(variant, name, 88)
+        except (FileNotFoundError, StopIteration): continue
+        canvas.alpha_composite(image, (52 + (shown % cols) * 108, 124 + (shown // cols) * 116))
+        shown += 1
     return canvas
 
 
@@ -218,7 +327,7 @@ def desktop(variant, temporary):
         if i < 3:
             draw.rounded_rectangle((408 + i * 64, 963, 424 + i * 64, 966), 2, fill=look['accent'])
     for i, name in enumerate(TRAY):
-        canvas.alpha_composite(icon(variant, name, 26), (996 + i * 32, 923))
+        canvas.alpha_composite(icon(variant, name, 22), (998 + i * 32, 925))
     draw.text((1196, 924), '10:24', font=font(18, True), fill=look['text'])
     caption = f'Eduka-Desktop · {look["desktop"]} · Eduka-Icons-{variant}'
     draw.text((width - 40 - draw.textlength(caption, font=font(16)), 24), caption, font=font(16), fill=look['muted'])
@@ -271,6 +380,9 @@ def main():
             apps_sheet(variant).convert('RGB').save(output / f'apps-{variant.lower()}.png', optimize=True)
         symbolic_sheet(temporary).convert('RGB').save(output / 'symbolic.png', optimize=True)
         panel_sheet(temporary).convert('RGB').save(output / 'panel.png', optimize=True)
+    folders_sheet().convert('RGB').save(output / 'folders.png', optimize=True)
+    artwork_sheet().convert('RGB').save(output / 'artwork.png', optimize=True)
+    types_sheet().convert('RGB').save(output / 'types.png', optimize=True)
     variants_strip().convert('RGB').save(output / 'variants.png', optimize=True)
     for path in sorted(output.glob('*.png')):
         print(path)

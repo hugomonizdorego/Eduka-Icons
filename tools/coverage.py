@@ -2,7 +2,8 @@
 """Report which icon names use Eduka artwork, a fallback theme, or nothing."""
 import json
 from pathlib import Path
-from build_theme import ROOT
+from build_theme import ROOT  # noqa: F401
+from settings import BUILD
 from reference_names import EDUKA_DESKTOP, FREEDESKTOP, DESKTOP_APPS, LXQT, KDE, GNOME, POPULAR
 
 FALLBACK_ROOTS = [Path('/usr/share/icons'), Path('/usr/local/share/icons')]
@@ -15,8 +16,8 @@ def names_in(theme):
     return names
 
 def coverage(variant='Light'):
-    theme = ROOT / f'build/themes/Eduka-Icons-{variant}'
-    own = names_in(theme) | names_in(ROOT / 'build/themes/Eduka-Icons-Apps')
+    theme = BUILD / f'themes/Eduka-Icons-{variant}'
+    own = names_in(theme) | names_in(BUILD / 'themes/Eduka-Icons-Apps')
     fallback = set()
     for root in FALLBACK_ROOTS:
         for name in ('breeze', 'Adwaita', 'hicolor'):
@@ -34,7 +35,7 @@ def coverage(variant='Light'):
 
 if __name__ == '__main__':
     report = coverage()
-    (ROOT / 'build/coverage-names.json').write_text(json.dumps(report, indent=2) + '\n')
+    (BUILD / 'coverage-names.json').write_text(json.dumps(report, indent=2) + '\n')
     for label, data in report['lists'].items():
         print(f"{label}: {data['eduka']}/{data['total']} Eduka artwork, "
               f"{len(data['fallback'])} fallback, {len(data['missing'])} missing")

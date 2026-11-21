@@ -1,0 +1,49 @@
+# Eduka-Icons build configuration. Edit, then run "make build".
+# Every value has a built-in default (tools/settings.py); delete what you do not change.
+
+[build]
+variants = ["Light", "Dark", "Bright", "Comfort"]
+# Icon sizes of the Eduka-drawn artwork (freedesktop/hicolor standard sizes).
+sizes = [16, 22, 24, 32, 48, 64, 96, 128, 256, 512]
+# Logical sizes that also get a HiDPI "@2x" directory (uses the 2x pixel size).
+hidpi = [16, 22, 24, 32, 48, 64, 128, 256]
+# Sizes of the application / file-type catalog (thousands of icons: keep this short).
+app_sizes = [16, 22, 24, 32, 48, 64, 128]
+app_hidpi = [16, 24, 32, 64]
+# Crisp small icons: unsharp mask applied after downscaling to these sizes.
+sharpen_up_to = 48
+sharpen_percent = 100
+
+[glyphs]
+# "mono": normal flat one-colour panel, tray, toolbar and symbolic icons.
+# "colour": two-tone coloured glyphs (GTK/KDE still recolour -symbolic icons).
+style = "mono"
+# Stroke weight multiplier (1.0 = 2 px on the 24 px grid).
+weight = 1.0
+comfort_weight = 1.3
+
+[glyphs.colour]
+# Light and Dark match the Eduka-Panel text colour of the light and dark Eduka-Desktop themes.
+Light = "#183c35"
+Dark = "#e0e0e0"
+Bright = "#1d3a36"
+Comfort = "#16130f"
+
+[folders]
+# Colour of the standard folders, and the extra colours that can be selected
+# later with: eduka-icons-select --folder-colour <name>
+default = "aqua"
+colours = ["aqua", "olive", "orange", "yellow", "rose", "blue", "plum", "grey"]
+# Largest size generated for the non-default colours.
+max_size = 256
+
+[bright]
+saturation = 1.38
+brightness = 1.0
+contrast = 1.06
+
+[comfort]
+outline = "#221d16"
+contrast = 1.14
+saturation = 0.9
+blue = 0.88

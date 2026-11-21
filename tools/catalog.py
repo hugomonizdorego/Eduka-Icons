@@ -9,17 +9,13 @@
   otherwise share artwork with another one (e.g. pcmanfm-qt and Nemo).
 """
 import functools
-import os
 import re
-import tarfile
-from pathlib import Path
 
-from artwork import CATALOG
+from artwork import CATALOG, FORCED
 from clay import ROOT, source_for
+import flat
 import reference_names
 
-UPSTREAM = sorted((ROOT / 'assets/upstream').glob('papirus-apps-*.tar.xz'))
-CACHE = ROOT / 'build/upstream'
 # Desktop-wide names: these keep Eduka artwork instead of an app logo.
 GENERIC = re.compile(
     r'^(preferences-|system-|utilities-|accessories-|applications-|application-|multimedia-|internet-|'
@@ -27,7 +23,8 @@ GENERIC = re.compile(
     r'im-|chat$|terminal$|calculator$|calendar$|weather$|clock$|drive-|media-|input-|network-|'
     r'computer|camera|printer|scanner|user-|folder|inode-|start-here|distributor-logo|dialog-|'
     r'emblem-|battery|bluetooth|phone$|display$|video-display|security-|edit-|document-|go-|view-|'
-    r'window-|list-|process-|zoom-|face-|appointment-|call-|software-|trash|desktop$|settings$)')
+    r'window-|list-|process-|zoom-|face-|appointment-|call-|software-|trash|desktop$|settings$|'
+    r'globe$|exec$|education$|graphics$|development$|unknown$)')
 PROTECTED = re.compile(r'^(eduka|edukasaun)', re.I)
 # Applications seen on Edukasaun OS whose icon names are not in the catalog.
 EXTRA = {
@@ -51,7 +48,10 @@ EXTRA = {
 }
 
 
-GUESS = [(r'edu|learn|school|teach|kid|tux|quiz|word', 'applications-education'),
+GUESS = [(r'clip', 'accessories-clipboard'), (r'backup|sync', 'utilities-backup'), (r'archiv|zip|compress', 'archive-manager'),
+         (r'screenshot|capture|grab', 'applets-screenshooter'), (r'vm|virt|emulat|qemu', 'applications-virtualization'),
+         (r'translat|dict|lang', 'preferences-desktop-translation'), (r'usb|boot|iso', 'usb-creator'),
+         (r'edu|learn|school|teach|kid|tux|quiz|word', 'applications-education'),
          (r'math|calc|abacus|geo|frac', 'accessories-calculator'), (r'music|audio|sound|song|tune|piano', 'multimedia-audio-player'),
          (r'video|movie|film|player|tv|stream', 'multimedia-video-player'), (r'chat|messag|talk|irc', 'eduka-konekta'),
          (r'mail', 'internet-mail'), (r'browser|web', 'internet-web-browser'), (r'game|play|puzzle|chess|kart', 'applications-games'),
@@ -98,28 +98,26 @@ def generic(name):
 @functools.lru_cache(maxsize=1)
 def upstream():
     """{name: final real artwork name} of the vendored Papirus apps."""
-    if not UPSTREAM:
+    folder = flat.extract('papirus-apps')
+    if folder is None:
         return {}
-    archive = UPSTREAM[-1]
-    folder = CACHE / archive.name.split('.tar')[0]
-    if not (folder / 'apps').is_dir():
-        folder.mkdir(parents=True, exist_ok=True)
-        with tarfile.open(archive) as tar:
-            tar.extractall(folder, filter='data')
-    apps = folder / 'apps'
-    names = {}
-    for path in apps.iterdir():
-        if path.suffix != '.svg':
-            continue
-        real = Path(os.path.realpath(path))
-        if real.is_file() and real.parent == apps.resolve():
-            names[path.stem] = real.stem
-    return names
+    return {name: real.stem for name, real in flat._names(folder / 'apps').items()}
 
 
 def upstream_dir():
-    archive = UPSTREAM[-1]
-    return CACHE / archive.name.split('.tar')[0] / 'apps'
+    return flat.extract('papirus-apps') / 'apps'
+
+
+TYPE_CONTEXTS = ('mimetypes', 'devices')
+
+
+@functools.lru_cache(maxsize=1)
+def upstream_types():
+    """{context: {name: real file}} of the vendored Papirus file-type and device artwork."""
+    folder = flat.extract('papirus-types')
+    if folder is None:
+        return {}
+    return {context: flat._names(folder / context) for context in TYPE_CONTEXTS}
 
 
 @functools.lru_cache(maxsize=1)
@@ -135,13 +133,23 @@ def plan():
     for main, (_, _, _, names) in CATALOG.items():
         reserved[main] = main
         for name in names.split():
-            if generic(name):
+            if generic(name) or name in FORCED:
                 reserved[name] = main
+    types = upstream_types()
+    # File types have their own upstream artwork; for devices Eduka's richer clay drawings keep priority.
+    type_target = {name: real.stem for name, real in types.get('mimetypes', {}).items()}
     core, badges = {}, {}
     for main, (kind, color, context, names) in CATALOG.items():
         keep = []
         for name in names.split():
             if name.endswith('-symbolic'):
+                continue
+            if name in FORCED:
+                keep.append(name)          # 1.0 artwork made for exactly this name
+                continue
+            own_type = type_target.get(name)
+            if own_type is not None and own_type not in CATALOG and not PROTECTED.match(name):
+                reserved.pop(name, None)   # upstream draws this file type / device itself
                 continue
             target = bulk.get(name)
             if PROTECTED.match(name) or (generic(name) and (target is None or target in reserved)):
@@ -195,4 +203,19 @@ def plan():
     for name, (source, base) in badges.items():
         if source == 'upstream':
             art.setdefault(base, folder / (base + '.svg'))
-    return core, {'art': art, 'links': links, 'badges': badges}
+    typed = {}
+    for context, names in types.items():
+        typed[context] = {'art': {}, 'links': {}}
+        for name, real in names.items():
+            if name in reserved:
+                continue
+            if real.stem in reserved:      # alias of an Eduka-drawn type or device: join that entry
+                main = reserved[real.stem]
+                kind, color, main_context, aliases = core[main]
+                core[main] = (kind, color, main_context, f'{aliases} {name}'.strip())
+                reserved[name] = main
+                continue
+            typed[context]['art'].setdefault(real.stem, real)
+            if name != real.stem:
+                typed[context]['links'][name] = real.stem
+    return core, {'art': art, 'links': links, 'badges': badges, 'types': typed}
