@@ -101,8 +101,8 @@ def icon(variant, name, size):
     if size <= 24:
         for path in theme.glob(f'flat/small/*/{name}.svg'):
             return _svg(path, size)
-    candidates = [*sorted(theme.glob('256x256/*')), *sorted(theme.glob('512x512/*')), *sorted(apps.glob('128x128/*'))]
-    for directory in candidates:
+    # Same order as a real lookup: the selected theme first (clay, then its flat glyphs), then the catalog.
+    for directory in sorted(theme.glob('256x256/*')):
         path = directory / (name + '.png')
         if path.exists():
             with Image.open(path) as image:
@@ -110,6 +110,11 @@ def icon(variant, name, size):
     for pattern in ('scalable/*', 'flat/24/*', 'flat/22/*', 'flat/16/*', 'symbolic/*'):
         for path in theme.glob(f'{pattern}/{name}.svg'):
             return _svg(path, size)
+    for directory in sorted(apps.glob('128x128/*')):
+        path = directory / (name + '.png')
+        if path.exists():
+            with Image.open(path) as image:
+                return image.convert('RGBA').resize((size, size), Image.Resampling.LANCZOS)
     raise FileNotFoundError(name)
 
 

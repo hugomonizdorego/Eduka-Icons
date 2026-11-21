@@ -140,13 +140,16 @@ def panel_names(core):
         if context not in PANEL_CONTEXTS and name in bulk:
             continue  # application/category names use full artwork
         always[name] = (kind, context_of(name, context))
+    toolbar = {n for name, (_, _, context, names) in core.items() for n in (name, *names.split())
+               if context_of(n, context) == 'actions'}
     for name in sorted(reserved):
-        if not TRAY.match(name):
+        # Tray names, and toolbar actions that have clay art for dialogs and launchers.
+        if not TRAY.match(name) and not (name in toolbar and name in drawable):
             continue
         if name in TRAY_GLYPH:
             small[name] = (TRAY_GLYPH[name], 'status')
         elif name in drawable:
-            small[name] = (drawable[name][0], 'status')
+            small[name] = (drawable[name][0], 'status' if TRAY.match(name) else 'actions')
     return always, small
 
 
