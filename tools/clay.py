@@ -66,7 +66,8 @@ def soften(art):
 
 def vector(kind,size=1024):
     # Freestanding geometry, independently sculpted paper/books are new here.
-    if kind=='book':
+    if kind in OVERRIDES:art=OVERRIDES[kind]()   # 1.0 detailed artwork, already on palette
+    elif kind=='book':
         art='''<path d="M17 33Q35 23 63 34Q89 23 111 33V96Q84 86 64 98Q40 85 17 96Z" fill="url(#mint)"/>
         <path d="M21 28Q44 20 63 32V91Q44 80 21 89Z" fill="url(#paper)"/>
         <path d="M65 32Q91 20 107 29V89Q83 80 65 91Z" fill="url(#ivory)"/>

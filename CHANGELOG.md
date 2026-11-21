@@ -1,5 +1,86 @@
 # Eduka-Icons
 
+## 1.0.0
+
+### Design
+
+- **System-tray, panel and toolbar icons are normal flat icons again.** Wi-Fi,
+  Bluetooth, volume, battery, notifications, brightness, power and every
+  toolbar action are one-colour line glyphs in the Eduka-Panel text colour
+  (no 3D clay below 32 px). Clay artwork starts at 32 px, where its detail
+  can be seen. `style = "colour"` in `eduka-icons.toml` brings two-tone
+  glyphs back.
+- **Every Eduka artwork was redrawn with more detail**: about 150 clay
+  compositions (Eduka-Desktop suite, folders and their 29 badges, devices,
+  file types, settings, dialogs, media, office, network, system and learning
+  subjects) with side faces, highlights and small story details, each
+  reviewed at 16, 24, 32, 48 and 64 px on light and dark backgrounds.
+- **Every state has its own drawing**: battery charging per level, battery
+  caution, four Wi-Fi levels plus connecting/error/off, wired states, volume
+  levels, airplane mode and night light on/off, presence, a full weather
+  set, mail states, sort/rotate/zoom/split directions, full and empty trash,
+  open and drag-accept folders. The build fails when two states of one
+  family share a picture.
+- New clay shader (specular highlight, two-layer shadow) and a rewritten clay
+  conversion for application icons: correct light direction on rotated
+  shapes, translucent details kept, no more random grain, crisp small sizes.
+
+### Completeness
+
+- **File types and devices**: 660+ file-type names and all device names are
+  clay now (previously only applications were).
+- **The complete flat set** for actions, status, panel, emblems, emotes,
+  animations and symbolic names (about 14,000 names from Papirus, recoloured
+  to the variant's glyph colour) backs the Eduka glyphs, so toolbars and
+  trays of GTK, Qt, KDE and Xfce applications are complete.
+- New folders (favourites, games, recent, backup, code, books, camera, mail,
+  print, important, network, root, apps, cloud drives, phone) and learning
+  subjects (atom, microscope, abacus, compass, blocks, paint box, trophy ...).
+- **Eight folder colours**: `eduka-icons-select --folder-colour olive`
+  (aqua, olive, orange, yellow, rose, blue, plum, grey; `--system` for all
+  users). Named colours (`folder-blue`, `folder-rose-documents` ...) exist too.
+
+### Sizes and configuration
+
+- Standard freedesktop sizes 16, 22, 24, 32, 48, 64, 96, 128, 256 and 512
+  with HiDPI (@2x) directories; in-between sizes (18, 20, 36, 40, 72 ...) are
+  scaled down from the next larger artwork instead of scaled up.
+- `eduka-icons.toml`: variants, sizes, HiDPI sizes, glyph style, weight and
+  colours, folder colours, sharpening, Bright and Comfort tuning.
+
+### Fixes
+
+- Application icons were hidden behind the applications' own hicolor icons
+  whenever the generated `Eduka-Icons-Local` theme existed (GTK and Qt). The
+  generated icons are now an overlay of `Eduka-Icons-Apps` in
+  `/usr/local/share/icons` (or `~/.local/share/icons`); the old themes are
+  removed on upgrade.
+- Names were filed in the wrong context (emblems, emotes, devices and file
+  types in `apps`), which broke icon pickers that browse by context.
+- Dark shapes of application icons were deleted, the light came from the
+  wrong side on rotated shapes, and transparent shapes turned into solid
+  blobs in the clay conversion.
+- SVG icons with units, without `width`/`height` or with a non-square view
+  box were rendered cropped.
+- `eduka-icons-select --reset-system-defaults` now restores the defaults
+  that were in place before (they are recorded in
+  `/var/lib/eduka-icons/backup`); backup files no longer leak into new home
+  directories through `/etc/skel`.
+- Settings files are replaced atomically and keep bytes that are not valid
+  UTF-8; one read-only file no longer stops the other desktops from being
+  configured.
+- The Eduka-Desktop theme follower no longer switches itself off on its
+  first run, survives a broken state file, and explains why it does nothing.
+- `eduka-icons-clayify` converts each icon in a time- and memory-limited
+  child process, tries the next original when one is broken, rejects blank
+  results, regenerates after an upgrade, cleans up icons of removed
+  applications and stays silent while its dependencies are being upgraded.
+- Package scripts: removing the package no longer resets defaults on
+  `deconfigure`, the systemd path unit is started on running systems, and
+  generated files are removed with the package.
+- Unit tests for the installed tools (`tools/test_tools.py`); the source
+  check covers every tracked file.
+
 ## 0.5.0
 
 - **Every application has its own icon.** The Papirus application catalog

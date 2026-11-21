@@ -112,15 +112,15 @@ def spark(cx, cy, r, c, **kw):
 # --------------------------------------------------------------------------
 def rocket():
     """Toy rocket climbing to the upper right: cream hull, orange nose and fins, aqua porthole, flame."""
-    t = Xf(45, 64, 66, .78, 5, -6)
+    t = Xf(45, 64, 66, .8, 5, -6)
     body = 'M64 6C80 20 84 44 82 62L78 88H50L46 62C44 44 48 20 64 6Z'
     fin_l = 'M47 62L35 77Q31 82 31.5 89L32.5 101Q33 105 36.5 102.5L50 90Z'
     fin_r = 'M81 62L93 77Q97 82 96.5 89L95.5 101Q95 105 91.5 102.5L78 90Z'
     s = spark(31, 33, 10, 'yellow') + dot(50, 20, 3.4, AQUA) + dot(101, 86, 4.4, YELLOW) + dot(88, 101, 3.2, AQUA)
     s += t.path(fin_l, 'orange-dark', transform='translate(1.5 3)') + t.path(fin_r, 'orange-dark', transform='translate(1.5 3)')
     s += t.path(fin_l, 'orange') + t.path(fin_r, 'orange')
-    s += t.path('M51 92C44 106 58 114 64 128C70 114 84 106 77 92Z', 'orange')            # flame
-    s += t.path('M57 92C53 102 61 107 64 115C67 107 75 102 71 92Z', 'yellow')
+    s += t.path('M51 92C44 106 58 114 64 128C70 114 84 106 77 92Z', 'yellow')            # flame
+    s += t.path('M57 92C53 102 61 107 64 114C67 107 75 102 71 92Z', 'orange')
     s += t.path('M52 86H76L73 96H55Z', 'olive-dark')                                     # nozzle
     s += t.path(body, 'cream-dark', transform='translate(2 3.5)')
     s += t.path(body, 'cream')
@@ -178,9 +178,9 @@ def wand():
     """Magic wand: olive stick with cream caps, a fat golden star and sparkles."""
     s = spark(36, 36, 10.5, 'orange') + spark(98, 86, 8.5, 'aqua')
     s += dot(57, 21, 3.4, AQUA) + dot(26, 64, 3.4, YELLOW) + dot(80, 96, 3.2, ORANGE)
-    stick = 'M27 100L70 57'
+    stick = 'M28 98L70 56'
     s += line(stick, CREAM_D, 11, transform='translate(1.5 3)') + line(stick, CREAM, 11)
-    s += line('M37 90L60 67', OLIVE_D, 11, transform='translate(1.5 3)') + line('M37 90L60 67', OLIVE, 11)
+    s += line('M38 88L60 66', OLIVE_D, 11, transform='translate(1.5 3)') + line('M38 88L60 66', OLIVE, 11)
     s += path(star(80, 44, 27, 12.5, 5, -90, .26), 'yellow-dark', transform='translate(2 3.5)')
     s += path(star(80, 44, 27, 12.5, 5, -90, .26), 'yellow')
     s += circle(80, 45, 5, 'cream')
@@ -216,17 +216,17 @@ def microscope():
     """Lab microscope: tilted cream tube, orange eyepiece, olive base and stage, yellow focus knob."""
     t = Xf(-26, 64, 44, 1.05, -12, 7)
     arm = 'M88 92V62Q88 42 62 42'
-    s = rect(22, 96, 84, 10, 5, 'olive-dark') + rect(22, 92, 84, 10, 5, 'olive')          # base
-    s += rect(49, 85, 18, 9, 3.5, 'yellow')                                              # lamp
-    s += line(arm, CREAM_D, 13, transform='translate(1.5 3)') + line(arm, CREAM, 13)     # arm
-    s += rect(30, 80.5, 56, 8, 4, 'olive-dark') + rect(30, 78, 56, 7.5, 3.7, 'olive')     # stage
+    s = line(arm, CREAM_D, 13, transform='translate(1.5 3)') + line(arm, CREAM, 13)      # arm
+    s += rect(47, 83, 20, 11, 4, 'yellow')                                               # lamp
+    s += rect(22, 96, 84, 10, 5, 'olive-dark') + rect(22, 92, 84, 10, 5, 'olive')         # base
+    s += rect(30, 78, 56, 7.5, 3.7, 'olive-dark')                                        # stage
     s += rect(44, 75, 30, 4.6, 2, 'aqua')                                                # slide
-    s += t.rr(60, 58, 8, 13, 2.5, 'charcoal')                                            # objective
+    s += t.rr(59.5, 58, 9, 13, 2.5, 'charcoal')                                            # objective
     s += t.rr(57.5, 14, 13, 14, 3, 'cream-dark')                                         # draw tube
-    s += t.rr(54, 22, 20, 34, 6, 'cream-dark', transform='translate(1.5 3)')
-    s += t.rr(54, 22, 20, 34, 6, 'cream')                                                # body tube
-    s += t.rr(51, 51, 26, 9, 4, 'yellow')                                                # nosepiece
-    s += t.rr(56, 9, 16, 9, 3.5, 'orange')                                               # eyepiece
+    s += t.rr(52.5, 22, 23, 34, 7, 'cream-dark', transform='translate(1.5 3)')
+    s += t.rr(52.5, 22, 23, 34, 7, 'cream')                                                # body tube
+    s += t.rr(49.5, 51, 29, 9.5, 4.5, 'yellow')                                                # nosepiece
+    s += t.rr(55, 9, 18, 9.5, 4, 'orange')                                               # eyepiece
     s += t.rr(58, 30, 12, 5, 2.5, 'olive')
     s += circle(90.5, 65.5, 9, 'yellow-dark') + circle(89.5, 64, 9, 'yellow') + circle(89.5, 64, 3.4, 'orange')   # focus knob
     return s
@@ -319,17 +319,17 @@ def pencil_ruler():
 # --------------------------------------------------------------------------
 def blocks():
     """Three toy cubes stacked in a pyramid, each stamped with a shape."""
-    top = Xf(-7, 64, 38)
+    top = Xf(-7, 64, 39)
     s = rect(18, 62, 44, 44, 8, 'orange-dark') + rect(18, 58, 44, 44, 8, 'orange')
     s += rect(24.5, 64.5, 31, 31, 5, 'none', stroke=ORANGE_D, stroke_width=3)
     s += circle(40, 80, 9.5, 'cream')
     s += rect(64, 62, 44, 44, 8, 'aqua-dark') + rect(64, 58, 44, 44, 8, 'aqua')
     s += rect(70.5, 64.5, 31, 31, 5, 'none', stroke=AQUA_D, stroke_width=3)
     s += path(rpoly([(86, 69), (97, 89), (75, 89)], .2), 'cream')
-    s += top.rr(43, 17, 42, 42, 8, 'yellow-dark', transform='translate(0 4)')
-    s += top.rr(43, 17, 42, 42, 8, 'yellow')
-    s += top.rr(49.5, 23.5, 29, 29, 5, 'none', stroke=YELLOW_D, stroke_width=3)
-    cx, cy = top.xy(64, 38)
+    s += top.rr(43, 18, 42, 42, 8, 'yellow-dark', transform='translate(0 4)')
+    s += top.rr(43, 18, 42, 42, 8, 'yellow')
+    s += top.rr(49.5, 24.5, 29, 29, 5, 'none', stroke=YELLOW_D, stroke_width=3)
+    cx, cy = top.xy(64, 39)
     s += path(star(cx, cy, 11, 5.2, 5, -97, .26), 'orange')
     return s
 
@@ -337,12 +337,12 @@ def blocks():
 # --------------------------------------------------------------------------
 def compass_draw():
     """Drawing compass with yellow hinge, needle and pencil legs, tracing an aqua arc."""
-    s = line('M22 92Q64 114 106 92', AQUA, 5.4)
-    left, right = 'M59 36L37 85', 'M69 36L89 78'
-    s += rect(58.5, 16, 11, 14, 4, 'cream')                                              # handle
+    s = line('M22 92Q64 114 106 92', AQUA, 6)
+    left, right = 'M59 36L36.5 84', 'M69 36L89.5 78'
+    s += rect(58.5, 16, 11, 14, 4, 'orange')                                              # handle
     s += line('M36 87L33.5 96.5', STONE, 4.4)                                            # needle
-    s += line(left, OLIVE_D, 11, transform='translate(1.5 3)') + line(right, OLIVE_D, 11, transform='translate(1.5 3)')
-    s += line(left, OLIVE, 11) + line(right, OLIVE, 11)
+    s += line(left, OLIVE_D, 12, transform='translate(1.5 3)') + line(right, OLIVE_D, 12, transform='translate(1.5 3)')
+    s += line(left, OLIVE, 12) + line(right, OLIVE, 12)
     s += line('M48 63Q64 55 81 63', CREAM, 4.8) + circle(82, 63, 5, 'yellow')             # spreader bar
     s += line('M88.5 77L93 89', ORANGE, 11)                                              # pencil clamp
     s += line('M94 92L95.4 96.5', CHARCOAL, 4.6)

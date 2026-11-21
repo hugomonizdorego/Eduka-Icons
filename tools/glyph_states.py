@@ -9,8 +9,8 @@ SYMBOLS: icon name -> (kind, 'alias alias ...', context)
 """
 from glyph_items import S, F, C, ring, SLASH  # noqa: F401
 
-_BODY = S('M1.5 7H14.5V17H1.5ZM16.6 10.5V13.5')          # compact battery, room for the bolt
-_BOLT = F('M22 5.5L18.2 12.7H20.6L19.5 18.5L23.6 11.2H21.2Z')
+_BODY = S('M2 7H14V17H2ZM16 10.5V13.5')          # compact battery, room for the bolt
+_BOLT = F('M21.4 5.5L17.8 12.7H20.1L19 18.5L22.9 11.2H20.6Z')
 _HEAD, _SHOULDERS = ring(10, 7.5, 3.6), S('M3 20Q3 13.6 10 13.6Q12.6 13.6 14.2 14.5')
 _CLOUD = S('M7.5 15H17Q20.5 15 20.5 11.8Q20.5 8.9 17.4 8.6Q16.6 5 12.7 5Q9.3 5 8.3 8.2Q4 8.4 4 11.7Q4 15 7.5 15Z')
 _SMALL_CLOUD = S('M9.5 19.5H17.8Q21.5 19.5 21.5 16.2Q21.5 13.3 18.4 13Q17.6 9.8 14.1 9.8Q11 9.8 10 12.7Q6.8 12.9 6.8 16.2Q6.8 19.5 9.5 19.5Z')
@@ -20,7 +20,7 @@ _LENS = [ring(10.5, 10.5, 6.5), S('M15.5 15.5L21 21')]
 
 
 def _charge(width):
-    return [_BODY, _BOLT] + ([F(f'M4 9.5H{4 + width}V14.5H4Z')] if width else [])
+    return [_BODY, _BOLT] + ([F(f'M4.5 9.5H{4.5 + width * 0.875}V14.5H4.5Z')] if width else [])
 
 
 GLYPHS = {
@@ -33,25 +33,25 @@ GLYPHS = {
                   S('M8 5.6Q12 3.9 16 5.6')],
     'wifi-connecting': [C(12, 19.5, 1.6), S('M8.5 15.5Q12 12.5 15.5 15.5'), C(5, 9.5, 1.1), C(12, 6.2, 1.1), C(19, 9.5, 1.1)],
     'wifi-error': [C(9.5, 19.5, 1.6), S('M6 15.5Q9.5 12.5 13 15.5'), S('M3 12Q9.5 6.5 16 12'), S('M20 8V15'), C(20, 18.6, 1.2)],
-    'wired-connecting': [S('M4 4H20V15H4ZM12 15V20M7 20H17'), C(8, 9.5, 1.1), C(12, 9.5, 1.1), C(16, 9.5, 1.1)],
-    'wired-error': [S('M4 4H20V15H4ZM12 15V20M7 20H17'), S('M12 6.8V9.8'), C(12, 12.3, 1.1)],
+    'wired-connecting': [S('M7 3H17V11H7ZM12 11V16'), C(4, 18.5, 1.3), C(9.3, 18.5, 1.3), C(14.7, 18.5, 1.3), C(20, 18.5, 1.3)],
+    'wired-error': [S('M4 3H14V11H4ZM9 11V16M2 21V16H16V21'), S('M20.5 6V14'), C(20.5, 17.8, 1.25)],
     # Volume: medium sits between low and high.
-    'volume-medium': [_SPEAKER, S('M15.5 9.5Q18 12 15.5 14.5'), S('M18.2 7.2Q22.6 12 18.2 16.8', 1.4)],
+    'volume-quiet': [_SPEAKER, C(16.6, 12, 1.5)],
     # Presence.
     'user-available': [_HEAD, _SHOULDERS, C(18.5, 18.5, 3.4)],
     'user-away': [_HEAD, _SHOULDERS, ring(18.5, 18.5, 2.9)],
-    'user-busy': [_HEAD, _SHOULDERS, S('M15.2 18.5H21.8', 2.6)],
+    'user-busy': [_HEAD, _SHOULDERS, S('M15.2 18.5H21.2', 2.6)],
     'user-offline': [_HEAD, _SHOULDERS, S('M16.2 16.2L20.8 20.8M20.8 16.2L16.2 20.8', 1.8)],
     'user-invisible': [_HEAD, S('M3 20Q3 13.6 10 13.6Q12.6 13.6 14.2 14.5', 1.2), S('M15.5 18.5H16.2M18.2 18.5H18.9M20.9 18.5H21.6', 1.8)],
     # Weather.
-    'weather-few-clouds': [_SMALL_CLOUD, S('M5.2 9.6A3.12 3.12 0 1 1 10.5 6.6'),
-                           S('M7.5 1.2V2.4M2.6 3L3.5 3.9M1 8H2.2M12.4 3L11.5 3.9', 1.6)],
+    'weather-few-clouds': [_SMALL_CLOUD, S('M5.9 10.1A3.12 3.12 0 1 1 11.2 7.1'),
+                           S('M8.2 2.2V3.2M3.6 3.8L4.3 4.5M2 8.5H3M12.9 3.8L12.2 4.5', 1.6)],
     'weather-clear-night': [S('M19.5 14.2A8 8 0 1 1 9.8 4.5A6.2 6.2 0 0 0 19.5 14.2Z'), S('M17 3.2V6.2M15.5 4.7H18.5', 1.4)],
-    'weather-few-clouds-night': [_SMALL_CLOUD, S('M9.4 2.2A4.3 4.3 0 0 0 5.3 9.9A5.4 5.4 0 0 1 9.4 2.2Z')],
+    'weather-few-clouds-night': [_SMALL_CLOUD, S('M10 2.8A4.3 4.3 0 0 0 5.9 10.5A5.4 5.4 0 0 1 10 2.8Z')],
     'weather-overcast': [_CLOUD, S('M6 19H18', 1.8)],
     'weather-showers': [_CLOUD, S('M8.5 17.5L7.3 21M12.6 17.5L11.4 21M16.7 17.5L15.5 21', 1.8)],
     'weather-showers-scattered': [_CLOUD, S('M10 17.5L8.8 21M15.2 17.5L14 21', 1.8)],
-    'weather-storm': [_CLOUD, F('M13.2 15.6L9 20H11.6L10.4 23.4L15 18.6H12.2Z')],
+    'weather-storm': [_CLOUD, F('M13.2 15.2L9.2 19.4H11.7L10.6 22.6L14.9 18.1H12.2Z')],
     'weather-snow': [_CLOUD, C(8, 18.6, 1.15), C(12.2, 20.6, 1.15), C(16.4, 18.6, 1.15)],
     'weather-fog': [_CLOUD, S('M5 18H19M7.5 21H16.5', 1.8)],
     'weather-windy': [S('M2.5 9H13.5Q16.5 9 16.5 6.6Q16.5 4.6 14.4 4.6Q12.8 4.6 12.5 6'),
@@ -72,7 +72,7 @@ GLYPHS = {
     'mail-signed': [_MAIL, S('M8 12.2L11 15L16.2 9.4')],
     'seek-backward': [S('M12 6L4 12L12 18ZM21 6L13 12L21 18Z')],
     'seek-forward': [S('M12 6L20 12L12 18ZM3 6L11 12L3 18Z')],
-    'save-as': [S('M4 3H15L19 7V11M4 3V21H10M7.5 3V8H13.5V3'), S('M20.3 13.4L22.6 15.7L16 22.3H13.7V20Z', 1.6)],
+    'save-as': [S('M4 3H15L19 7V11M4 3V21H10M7.5 3V8H13.5V3'), S('M19.6 12.9L21.9 15.2L15.6 21.5H13.3V19.2Z', 1.6)],
     'star-half': [S('M12 2.5L14.9 8.6L21.5 9.4L16.6 13.9L17.9 20.5L12 17.2L6.1 20.5L7.4 13.9L2.5 9.4L9.1 8.6Z', 1.6),
                   F('M12 2.5V17.2L6.1 20.5L7.4 13.9L2.5 9.4L9.1 8.6Z')],
     'brightness-low': [ring(12, 12, 3.6), C(12, 4.4, 1.1), C(12, 19.6, 1.1), C(4.4, 12, 1.1), C(19.6, 12, 1.1)],
@@ -137,8 +137,8 @@ SYMBOLS = {
     'night-light': ('suspend', 'redshift-status-on', 'status'),
     'night-light-disabled': ('night-light-off', 'redshift-status-off', 'status'),
     'audio-volume-high': ('volume-high', 'audio-volume-overamplified audio-volume-high-panel', 'status'),
-    'audio-volume-medium': ('volume-medium', 'audio-volume-medium-panel', 'status'),
-    'audio-volume-low': ('volume-low', 'audio-volume-low-panel', 'status'),
+    'audio-volume-medium': ('volume-low', 'audio-volume-medium-panel', 'status'),
+    'audio-volume-low': ('volume-quiet', 'audio-volume-low-panel', 'status'),
     'audio-volume-zero': ('volume-zero', 'audio-volume-zero-panel audio-volume-off', 'status'),
     'audio-volume-muted': ('volume-mute', 'audio-volume-muted-blocking audio-volume-muted-panel', 'status'),
     'bluetooth-active': ('bluetooth', 'bluetooth-paired bluetooth blueman-tray blueman blueman-active preferences-system-bluetooth-activated', 'status'),
@@ -197,6 +197,16 @@ SYMBOLS = {
     'non-starred': ('star-outline', 'rating-unrated', 'actions'),
     'user-trash': ('trash', 'edit-delete trash-empty', 'places'),
     'user-trash-full': ('trash-full', '', 'places'),
+    # Names that pointed at a misleading drawing.
+    'camera-web': ('webcam', '', 'devices'),
+    'camera-video': ('video-camera', '', 'devices'),
+    'media-flash': ('sd-card', 'media-flash-sd-mmc media-memory', 'devices'),
+    'emblem-shared': ('share', '', 'emblems'),
+    'printer-error': ('printer-alert', 'printer-warning', 'status'),
+    'system-software-update': ('update', 'software-update-available software-update-urgent', 'apps'),
+    'emblem-synchronized': ('check-circle', '', 'emblems'),
+    'media-playlist-consecutive': ('playlist', '', 'actions'),
+    'format-justify-left': ('justify-left', '', 'actions'),
 }
 
 # Names that must never resolve to the same drawing (checked by the build).
@@ -207,7 +217,8 @@ FAMILIES = [
      'network-wireless-signal-weak', 'network-wireless-signal-none', 'network-wireless-acquiring',
      'network-wireless-no-route', 'network-wireless-offline'],
     ['network-wired', 'network-wired-acquiring', 'network-wired-no-route', 'network-wired-disconnected'],
-    ['audio-volume-high', 'audio-volume-medium', 'audio-volume-low', 'audio-volume-muted'],
+    ['audio-volume-high', 'audio-volume-medium', 'audio-volume-low', 'audio-volume-zero', 'audio-volume-muted'],
+    ['camera-photo', 'camera-web', 'camera-video'], ['printer', 'printer-error'],
     ['airplane-mode', 'airplane-mode-disabled'], ['night-light', 'night-light-disabled'],
     ['bluetooth-active', 'bluetooth-disabled'], ['notification-active', 'notifications-disabled'],
     ['user-available', 'user-away', 'user-busy', 'user-offline', 'user-invisible'],

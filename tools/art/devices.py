@@ -87,7 +87,7 @@ def laptop():
     return _laptop(
         rect(35, 30, 32, 24, 3, 'white')
         + rect(35, 30, 32, 6.5, 3, 'orange')
-        + line('M40 42H61M40 48H54', OLIVE, 3.2)
+        + line('M40.5 42H61M40.5 49H54', OLIVE, 4)
         + circle(80, 38, 6, 'yellow')
         + rect(73, 48, 14, 5.5, 2.7, 'olive')
     )
@@ -101,49 +101,47 @@ def laptop_remote():
 def drive():
     arm = Tilt(0)
     return (
-        rect(25, 20, 78, 86, 12, 'cream-dark')
-        + rect(25, 16, 78, 86, 12, 'cream')
+        rect(21, 20, 86, 86, 13, 'cream-dark')
+        + rect(21, 16, 86, 86, 13, 'cream')
         # platter
-        + circle(64, 49, 29, 'olive-dark')
-        + circle(64, 48, 28, 'aqua')
-        + circle(64, 48, 18, 'none', stroke=AQUA_DARK, stroke_width=3)
-        + circle(64, 48, 9, 'cream')
-        + circle(64, 48, 4, 'orange')
+        + circle(62, 50, 31, 'olive-dark')
+        + circle(62, 49, 30, 'aqua')
+        + circle(62, 49, 19.5, 'none', stroke=AQUA_DARK, stroke_width=4)
+        + circle(62, 49, 10, 'cream')
+        + circle(62, 49, 4.5, 'orange')
         # actuator arm
-        + path('M84 84L66 62Q66 55 73 57L94 80Z', 'olive')
-        + arm.rr(64, 55, 9, 7, 2, 'charcoal')
-        + circle(89, 85, 8, 'yellow')
-        + circle(89, 85, 3, 'yellow-dark')
+        + path('M87 85L64 63Q63 55 71 57L98 80Z', 'olive')
+        + arm.rr(61, 55, 10, 8, 2.5, 'charcoal')
+        + circle(93, 86, 8.5, 'yellow')
+        + circle(93, 86, 3.2, 'yellow-dark')
         # label, activity light, screws
-        + rect(32, 82, 34, 12, 4, 'orange')
-        + line('M38 88H55', WHITE, 4)
-        + circle(72, 93, 2.6, 'olive')
-        + circle(32, 23, 2.6, 'cream-dark')
-        + circle(96, 23, 2.6, 'cream-dark')
-        + circle(32, 95, 2.6, 'cream-dark')
+        + rect(28, 83, 38, 13, 4.5, 'orange')
+        + line('M35 89.5H55', WHITE, 4)
+        + circle(73, 94, 3, 'olive')
+        + circle(29, 24, 2.8, 'cream-dark')
+        + circle(99, 24, 2.8, 'cream-dark')
     )
 
 
 def usb():
-    t = Tilt(35, 64, 62, 1.13, 0, -1)
+    t = Tilt(48, 64, 58, 1.04, -1.7, 1.5)
     return (
-        # key ring through the lanyard hole
-        t.circ(64, 100, 7.5, 'none', stroke=OLIVE, stroke_width=4.5)
         # metal plug
-        + t.rr(52, 18, 24, 24, 3, 'stone', transform='translate(1.5 2.5)')
-        + t.rr(52, 18, 24, 24, 3, 'metal')
-        + t.rr(55.5, 23, 6, 8, 1.2, 'charcoal')
-        + t.rr(66.5, 23, 6, 8, 1.2, 'charcoal')
+        t.rr(48, 12, 32, 28, 3.5, 'stone', transform='translate(1.5 3)')
+        + t.rr(48, 12, 32, 28, 3.5, 'metal')
+        + t.rr(52.5, 17, 9, 10, 1.5, 'charcoal')
+        + t.rr(66.5, 17, 9, 10, 1.5, 'charcoal')
         # body
-        + t.rr(45, 38, 38, 60, 12, 'orange-dark', transform='translate(2 3.5)')
-        + t.rr(45, 38, 38, 60, 12, 'orange')
-        + t.rr(45, 38, 38, 11, 5, 'cream')
+        + t.rr(39, 32, 50, 68, 15, 'orange-dark', transform='translate(2 4)')
+        + t.rr(39, 32, 50, 68, 15, 'orange')
+        + t.rr(39, 32, 50, 13, 6, 'cream')
         # slider button with grip
-        + t.rr(54, 55, 20, 24, 7, 'yellow')
-        + t.ln([(59, 63), (69, 63)], '#cf9f33', 3.4)
-        + t.ln([(59, 70), (69, 70)], '#cf9f33', 3.4)
-        # lanyard hole and light
-        + t.circ(64, 89, 3.6, 'charcoal')
+        + t.rr(51, 53, 26, 28, 8.5, 'yellow-dark', transform='translate(1 2)')
+        + t.rr(51, 53, 26, 28, 8.5, 'yellow')
+        + t.ln([(58, 63), (70, 63)], '#cf9f33', 4)
+        + t.ln([(58, 71), (70, 71)], '#cf9f33', 4)
+        # lanyard hole
+        + t.circ(64, 90.5, 4.2, 'charcoal')
     )
 
 
@@ -152,7 +150,7 @@ def printer():
         # rear tray and fresh paper
         rect(35, 20, 58, 30, 6, 'cream-dark')
         + rect(41, 16, 46, 34, 4, 'white')
-        + line('M49 25H79M49 32H72', AQUA_DARK, 3.2)
+        + line('M49 24.5H79M49 31.5H70', AQUA_DARK, 4)
         # output tray
         + path('M28 84H100L105 99Q106 106 99 106H29Q22 106 23 99Z', 'olive-dark')
         + path('M30 82H98L102 96Q103 101 97 101H31Q25 101 26 96Z', 'olive')
@@ -169,39 +167,39 @@ def printer():
         + rect(30, 65, 68, 10, 5, 'charcoal')
         + rect(37, 69, 54, 30, 4, 'white')
         + rect(43, 76, 18, 16, 3, 'orange')
-        + line('M67 78H84M67 84H84M67 90H78', OLIVE, 3.2)
+        + line('M68 77H84M68 84H84M68 91H77', OLIVE, 4)
     )
 
 
 def keyboard():
-    row = lambda y, xs, c: ''.join(rect(x, y, 9, 8, 2.5, c) for x in xs)
+    row = lambda y, xs, c: ''.join(rect(x, y, 9.5, 9, 2.6, c) for x in xs)
     xs = [22 + 12 * i for i in range(7)]
     return (
-        line('M64 46C64 34 46 40 45 28C44 19 56 17 60 24', ORANGE, 4.8)
-        + rect(16, 48, 94, 56, 11, 'cream-dark')
-        + rect(16, 43, 94, 56, 11, 'cream')
-        + rect(22, 50, 9, 8, 2.5, 'orange') + row(50, xs[1:], 'olive')
-        + row(61, xs[:6], 'olive')
-        + row(72, xs[:6], 'olive')
-        + rect(94, 61, 9, 19, 2.5, 'yellow')
-        + row(83, xs[:2], 'olive') + rect(46, 83, 33, 8, 3, 'aqua') + row(83, xs[5:], 'olive')
+        line('M60 42C60 30 78 34 80 25C81 19 88 17 94 20', ORANGE, 5)
+        + rect(16, 43, 94, 61, 12, 'cream-dark')
+        + rect(16, 38, 94, 61, 12, 'cream')
+        + rect(22, 45.5, 9.5, 9, 2.6, 'orange') + row(45.5, xs[1:], 'olive')
+        + row(57.5, xs[:6], 'olive')
+        + row(69.5, xs[:6], 'olive')
+        + rect(94, 57.5, 9.5, 21, 2.6, 'yellow')
+        + row(81.5, xs[:2], 'olive') + rect(46, 81.5, 33.5, 9, 3, 'aqua') + row(81.5, xs[5:], 'olive')
     )
 
 
 def mouse():
-    body = 'M60 28C80 28 90 42 90 60V76C90 94 78 102 60 102C42 102 30 94 30 76V60C30 42 40 28 60 28Z'
+    body = 'M61 25C85 25 98 41 98 62V73C98 93 84 102 61 102C38 102 24 93 24 73V62C24 41 37 25 61 25Z'
     return (
-        line('M60 30C60 12 85 16 87 30C88 40 100 39 102 28', ORANGE, 4.8)
+        line('M61 29C60 17 80 15 84 24C87 31 98 33 103 24', ORANGE, 5)
         + path(body, 'olive-dark', transform='translate(0 4)')
         + path(body, 'olive')
         # two buttons with a seam
-        + path('M58 28.2C42 29 31 41 30.2 59H58Z', 'cream')
-        + path('M62 28.2C78 29 89 41 89.8 59H62Z', 'cream')
+        + path('M58.8 25.1C38 26 25 41 24.1 60.5H58.8Z', 'cream')
+        + path('M63.2 25.1C84 26 97 41 97.9 60.5H63.2Z', 'cream')
         # wheel
-        + rect(54, 35, 12, 20, 6, 'charcoal')
-        + rect(56.5, 38, 7, 14, 3.5, 'orange')
+        + rect(53.5, 32, 15, 23, 7.5, 'charcoal')
+        + rect(56.75, 35.5, 8.5, 16, 4.25, 'orange')
         # palm mark
-        + circle(60, 82, 5.5, 'yellow')
+        + circle(61, 82, 6.5, 'yellow')
     )
 
 
@@ -209,18 +207,18 @@ def smartphone():
     tiles = ''
     colours = ['orange', 'yellow', 'cream', 'cream', 'olive', 'orange']
     for i, c in enumerate(colours):
-        tiles += rect(42.5 + 14.5 * (i % 3), 33 + 14 * (i // 3), 11, 11, 3.3, c)
+        tiles += rect(38.5 + 16 * (i % 3), 32.5 + 15.5 * (i // 3), 12.5, 12.5, 3.6, c)
     return (
-        rect(87, 34, 8, 17, 3, 'orange')
-        + rect(37, 20, 56, 86, 13, 'cream-dark')
-        + rect(34, 16, 56, 86, 13, 'cream')
-        + rect(38, 20, 48, 78, 9.5, 'aqua')
-        + rect(53, 23, 18, 4.8, 2.4, 'charcoal')
+        rect(89, 35, 8.5, 18, 3.2, 'orange')
+        + rect(33, 20, 62, 86, 14, 'cream-dark')
+        + rect(30, 16, 62, 86, 14, 'cream')
+        + rect(34, 20, 54, 78, 10.5, 'aqua')
+        + rect(51, 23, 20, 5, 2.5, 'charcoal')
         + tiles
         # wallpaper hills and home bar
-        + path('M38 77Q50 64 62 72Q74 80 86 67V88.5Q86 98 76.5 98H47.5Q38 98 38 88.5Z', 'olive')
-        + path('M38 86Q54 76 72 98H47.5Q38 98 38 88.5Z', 'olive-dark')
-        + line('M53 92H71', WHITE, 3.6)
+        + path('M34 77Q47 63 61 72Q75 81 88 66V87.5Q88 98 77.5 98H44.5Q34 98 34 87.5Z', 'olive')
+        + path('M34 85Q52 75 73 98H44.5Q34 98 34 87.5Z', 'olive-dark')
+        + line('M51 92H71', WHITE, 4)
     )
 
 
@@ -233,7 +231,7 @@ def disc():
         circle(64, 64, 42, 'aqua-dark')
         + circle(63, 60, 42, 'cream')
         + circle(63, 60, 37, 'aqua')
-        + circle(63, 60, 27, 'none', stroke=AQUA_DARK, stroke_width=3, opacity='.7')
+        + circle(63, 60, 27, 'none', stroke=AQUA_DARK, stroke_width=4, opacity='.7')
         + wedge(-72, -38, 16, 37, 'white', opacity='.75')
         + wedge(-38, -22, 16, 37, 'yellow', opacity='.8')
         + wedge(108, 142, 16, 37, 'white', opacity='.75')

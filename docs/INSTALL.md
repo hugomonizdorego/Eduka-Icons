@@ -103,7 +103,7 @@ eduka-icons-select --apply Light    # or Dark, Bright, Comfort
 This updates, for the current account only: LXQt/Eduka-Desktop, GTK 2/3/4,
 GNOME/Budgie (gsettings), Cinnamon, MATE, Xfce (xfconf), KDE (`kdeglobals`),
 LXDE, qt5ct/qt6ct and xsettingsd (i3, Openbox, Fluxbox, bspwm, sway users).
-Eduka-Settings → Appearance → Icon theme also lists all three variants.
+Eduka-Settings → Appearance → Icon theme also lists all four variants.
 
 ### Following the Eduka-Desktop theme
 
@@ -137,21 +137,55 @@ Appearance). The Eduka-Desktop theme follower never switches away from it.
 ## 5. Applications installed later
 
 `eduka-icons-clayify` finds every installed application (Debian packages,
-Flatpak, Snap, `~/.local`) whose icon is not drawn by Eduka-Icons yet, turns
-its own icon into clay and stores it in the hidden themes
-`Eduka-Icons-Local` and `Eduka-Icons-Local-Comfort`. It runs automatically
-after every apt/dpkg operation and when Flatpak/Snap applications change.
+Flatpak, Snap, `~/.local`) whose icon is not drawn by Eduka-Icons yet and
+turns its own icon into clay. The results are an overlay of the catalog
+themes: they are stored under the same theme names in another icon
+directory, `/usr/local/share/icons/Eduka-Icons-Apps` and
+`.../Eduka-Icons-Apps-Comfort` (or `~/.local/share/icons/...` with `--user`).
+Nothing in the packaged themes is changed. It runs automatically after every
+apt/dpkg operation and when Flatpak/Snap applications change.
 
 ```sh
 sudo eduka-icons-clayify            # all users
 eduka-icons-clayify --user          # applications installed in your account
 sudo eduka-icons-clayify --rebuild  # regenerate everything
+sudo eduka-icons-clayify --remove   # delete the generated icons
 ```
 
 Applications that point to an icon file by absolute path cannot be themed by
 any icon theme.
 
-## 6. From source without a package
+## 6. Folder colours
+
+```sh
+eduka-icons-select --list-folder-colours
+eduka-icons-select --folder-colour olive            # this account
+sudo eduka-icons-select --folder-colour blue --system   # all users (e.g. in Cubic)
+eduka-icons-select --folder-colour default          # back to aqua
+```
+
+All standard folders (Documents, Downloads, Music ...) change together and
+keep their badges. Single folders can use a named colour in any file manager
+that lets you pick a folder icon: `folder-rose`, `folder-blue-documents` ...
+
+## 7. Sizes and customising the build
+
+The themes ship the freedesktop standard sizes 16, 22, 24, 32, 48, 64, 96,
+128, 256 and 512 px plus HiDPI (@2x) directories. Panels and menus may ask
+for any size: sizes in between are scaled down from the next larger artwork.
+Up to 24 px the tray, panel and toolbar names are flat one-colour glyphs;
+from 32 px they are clay.
+
+Everything else is set in `eduka-icons.toml` before `make build`:
+
+| Section | What it controls |
+| --- | --- |
+| `[build]` | variants to build, icon sizes, HiDPI sizes, catalog sizes, sharpening |
+| `[glyphs]` | `style = "mono"` (flat, default) or `"colour"`; stroke weight; colour per variant |
+| `[folders]` | default folder colour and the selectable colours |
+| `[bright]`, `[comfort]` | saturation, contrast, contour colour, blue reduction |
+
+## 8. From source without a package
 
 ```sh
 make build
@@ -166,18 +200,27 @@ sudo make install-system         # /usr/share/icons (then select as above)
   Eduka-Desktop 0.9.24 asks for has Eduka artwork (`make test` fails otherwise).
 - **Applications not drawn yet** fall back to Papirus (recommended by the
   package), Breeze, Adwaita and hicolor.
-- **Symbolic icons** are filled outlines, so GTK's recolouring keeps the line
-  art, and Qt/KDE show them in the variant's colour.
+- **Tray, panel and symbolic icons** are flat filled outlines in the
+  Eduka-Panel text colour of the matching theme (Light `#183c35`, Dark
+  `#e0e0e0`). GTK and KDE recolour the `-symbolic` names themselves; Qt 5
+  panels show the colour of the selected variant, so pick the variant that
+  matches the panel (the theme follower does this in Eduka-Desktop).
 - **Qt outside LXQt/KDE** (e.g. under Openbox or i3) follows qt5ct/qt6ct or
   the GTK platform theme; the selector updates qt5ct/qt6ct when installed.
 
 ### Suggestions for Eduka-Desktop
 
+These need changes in the Eduka-Desktop repository; Eduka-Icons works
+without them.
+
 - Add `eduka-icons` to `Recommends:` of `edukasaun-desktop-menu`, before
-  `papirus-icon-theme`.
-- In `eduka_common._theme_candidates()`, try `Eduka-Icons-Light` (or the
-  variant matching the current Eduka theme) before `Papirus` as the default
-  when no icon theme is configured.
+  `papirus-icon-theme`, and try `Eduka-Icons-Light` (or the variant matching
+  the current Eduka theme) first in `eduka_common._theme_candidates()`.
+- Ask for the `-symbolic` name first in Eduka-Panel's tray and tint it with
+  the panel text colour, so tray icons follow custom panel colours exactly.
+- Set `Qt.AA_UseHighDpiPixmaps` so the @2x artwork is used on HiDPI screens.
+- Call `eduka-icons-select --apply <variant>` from Eduka-Settings when the
+  icon theme is changed there, so GTK and other desktops follow.
 - Credit Eduka-Icons in `eduka-about`.
 
 ## Troubleshooting
@@ -187,4 +230,5 @@ sudo make install-system         # /usr/share/icons (then select as above)
 | Old icons after switching | Log out and in; or `gtk-update-icon-cache -f /usr/share/icons/Eduka-Icons-Light` |
 | A local copy hides the system theme | Remove `~/.local/share/icons/Eduka-Icons-*` and `~/.icons/Eduka-Icons-*` |
 | GNOME/Cinnamon/MATE default not used | `sudo glib-compile-schemas /usr/share/glib-2.0/schemas`; existing users keep their own gsettings value |
+| Tray icons too dark or too light on a custom panel | Select the other variant (`--apply Dark` for dark panels), or set `[glyphs.colour]` in `eduka-icons.toml` and rebuild |
 | Undo the system defaults | `sudo eduka-icons-select --reset-system-defaults` |

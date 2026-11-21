@@ -2,7 +2,8 @@
 
 A badge is a small symbol drawn around (64, 82) within about +-15 units;
 tools/clay.py folder_svg() scales it by 0.6 and sets it on the olive disc at
-the lower right of the folder. Only light clay reads on olive, so every badge
+the lower right of the folder (_fit() below enlarges each one by 1.22 so it
+fills the disc). Only light clay reads on olive, so every badge
 is one bold cream/white silhouette with yellow parts and a small orange accent;
 inner details are "cut" in olive-dark. Each shape carries its own clay filter
 so the symbol is sculpted on the disc instead of printed on it.
@@ -10,8 +11,7 @@ so the symbol is sculpted on the disc instead of printed on it.
 import math
 from artwork import path, rect, circle, line
 
-CREAM, WHITE, CREAM_DARK = '#f4e8cf', '#fbf5e6', '#d9c7a3'
-ORANGE, YELLOW, OLIVE_DARK = '#e0703a', '#eec14f', '#5f6c40'
+WHITE, ORANGE, YELLOW = '#fbf5e6', '#e0703a', '#eec14f'
 CUT = '#56623a'          # engraved detail inside a light shape
 CLAY, CLAY_STROKE = 'url(#clay)', 'url(#clay-stroke)'
 
@@ -47,6 +47,23 @@ def polar(cx, cy, r, degrees):
     return f'{cx + r * math.sin(a):.2f} {cy - r * math.cos(a):.2f}'
 
 
+def at(cx, cy, r, degrees):
+    a = math.radians(degrees)
+    return cx + r * math.sin(a), cy - r * math.cos(a)
+
+
+def rounded(points, radius):
+    """Closed polygon with every corner rounded by a quadratic curve."""
+    d, n = '', len(points)
+    for i, (x, y) in enumerate(points):
+        (px, py), (nx, ny) = points[i - 1], points[(i + 1) % n]
+        a, b = math.hypot(px - x, py - y), math.hypot(nx - x, ny - y)
+        ra, rb = min(radius, a / 2), min(radius, b / 2)
+        d += (f'{"L" if d else "M"}{x + (px - x) * ra / a:.2f} {y + (py - y) * ra / a:.2f}'
+              f'Q{x:.2f} {y:.2f} {x + (nx - x) * rb / b:.2f} {y + (ny - y) * rb / b:.2f}')
+    return d + 'Z'
+
+
 def home():
     return (
         R(69, 67, 6, 10, 2, 'orange')                                              # chimney
@@ -79,10 +96,9 @@ def music():
 def pictures():
     return ('<g transform="rotate(-7 64 82)">'
             + R(48, 69, 32, 26, 4.5, 'white')
-            + R(51.5, 72.5, 25, 19, 2.5, 'aqua')
-            + path('M51.5 89L58.6 80.2Q60.2 78.6 61.8 80.2L66.4 85L69.3 82.4Q70.8 81.2 72.2 82.6L76.5 87V89'
-                   'Q76.5 91.5 74 91.5H54Q51.5 91.5 51.5 89Z', 'olive')
-            + C(70.5, 77.4, 3.4, 'yellow')
+            + path('M51.5 89.5L58.6 79.6Q60.2 78 61.8 79.6L66.4 84.6L69.3 82Q70.8 80.8 72.2 82.2L76.5 86.6V89'
+                   'Q76.5 91.5 74 91.5H54Q51.5 91.5 51.5 89.5Z', CUT)                # hills cut into the card
+            + C(71, 76.4, 3.6, 'yellow')
             + '</g>')
 
 
@@ -153,10 +169,9 @@ def desktop():
 
 
 def favorites():
-    def star(cx, cy, big, small):
-        return 'M' + 'L'.join(polar(cx, cy, big if i % 2 == 0 else small, i * 36) for i in range(10)) + 'Z'
-    return (path(star(64, 85, 17.5, 8.4), 'yellow-dark', stroke='#cf9f33', stroke_width=3, stroke_linejoin='round', filter=CLAY)
-            + path(star(64, 82.8, 17.5, 8.4), 'yellow', stroke=YELLOW, stroke_width=3, stroke_linejoin='round', filter=CLAY))
+    def star(cy):
+        return rounded([at(64, cy, 19.4 if i % 2 == 0 else 9.6, i * 36) for i in range(10)], 2.6)
+    return P(star(85.2), 'yellow-dark') + P(star(82.8), 'yellow')
 
 
 def games():
@@ -246,13 +261,12 @@ def network():
 
 def root():
     points = []
-    teeth, steps = 8, 6
-    for i in range(teeth * steps):
-        radius = 17 if i % steps in (0, 1, 2) else 12.6
-        points.append(polar(64, 82, radius, (i - 1) * 360 / (teeth * steps)))
+    for tooth in range(8):
+        a = tooth * 45
+        points += [at(64, 82, 12.8, a - 14.5), at(64, 82, 18, a - 9.5), at(64, 82, 18, a + 9.5), at(64, 82, 12.8, a + 14.5)]
     return (
-        path('M' + 'L'.join(points) + 'Z', 'white', stroke=WHITE, stroke_width=2, stroke_linejoin='round', filter=CLAY)
-        + C(64, 82, 7, 'yellow') + circle(64, 82, 3, ORANGE)
+        P(rounded(points, 1.8), 'white')
+        + C(64, 82, 7.2, 'yellow') + circle(64, 82, 3.2, ORANGE)
     )
 
 

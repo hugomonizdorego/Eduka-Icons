@@ -422,6 +422,17 @@ REKIND = {
     'cheese': 'webcam', 'accessories-dictionary': 'dictionary', 'edukasaun-welcome': 'eduka-welcome',
 }
 ENTRIES_1_0 = {
+ # Learning (Edukasaun is a school system: every subject gets its own picture)
+ 'applications-education-science': ('atom', 'categories', 'applications-science-physics applications-physics applications-chemistry applications-astronomy'),
+ 'applications-biology': ('microscope', 'categories', 'applications-education-biology applications-medical applications-science-biology'),
+ 'applications-education-university': ('graduation', 'categories', 'applications-education-school applications-education-teaching'),
+ 'games-highscores': ('trophy', 'actions', 'games-achievements applications-sports applications-games-sports'),
+ 'applications-education-mathematics': ('abacus', 'categories', 'applications-mathematics applications-math applications-science-math'),
+ 'applications-boardgames': ('dice', 'categories', 'applications-games-board applications-games-strategy applications-games-logic applications-games-card'),
+ 'applications-education-miscellaneous': ('pencil-ruler', 'categories', 'applications-education-language applications-education-literature'),
+ 'applications-toys': ('blocks', 'categories', 'applications-games-kids applications-kids applications-education-preschool'),
+ 'applications-engineering': ('compass-draw', 'categories', 'applications-geometry applications-education-geometry applications-science-engineering'),
+ 'applications-painting': ('paintbox', 'categories', 'applications-art applications-drawing applications-graphics-painting'),
  # Eduka-Desktop suite
  'eduka-menu': ('eduka-menu', 'apps', 'Eduka-Menu eduka-menu-daemon'),
  'eduka-panel': ('eduka-panel', 'apps', 'Eduka-Panel'),
